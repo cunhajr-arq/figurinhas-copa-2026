@@ -196,156 +196,193 @@ const { useState, useEffect, useRef, useMemo, useCallback } = React;
 /* ================================================================
    DADOS — As 48 seleções da Copa 2026 (288 figurinhas)
 ================================================================ */
+/* Ordem oficial do álbum: FWC (especiais) · Grupos A–L (sorteio real) · Coca-Cola */
 const TEAMS = [
-  /* CONCACAF */
-  { code:'USA', name:'EUA',           flag:'🇺🇸', c1:'#b31942', c2:'#0a3161', conf:'CONCACAF' },
-  { code:'MEX', name:'México',        flag:'🇲🇽', c1:'#0a8f4e', c2:'#b3232f', conf:'CONCACAF' },
-  { code:'CAN', name:'Canadá',        flag:'🇨🇦', c1:'#e63946', c2:'#7a0e1c', conf:'CONCACAF' },
-  { code:'PAN', name:'Panamá',        flag:'🇵🇦', c1:'#da121a', c2:'#072357', conf:'CONCACAF' },
-  { code:'CUW', name:'Curaçao',       flag:'🇨🇼', c1:'#f9e814', c2:'#002b7f', conf:'CONCACAF' },
-  { code:'HAI', name:'Haiti',         flag:'🇭🇹', c1:'#d21034', c2:'#00209f', conf:'CONCACAF' },
-  /* CONMEBOL */
-  { code:'BRA', name:'Brasil',        flag:'🇧🇷', c1:'#ffd60a', c2:'#0a7e3d', conf:'CONMEBOL' },
-  { code:'ARG', name:'Argentina',     flag:'🇦🇷', c1:'#75c8f0', c2:'#3a86c8', conf:'CONMEBOL' },
-  { code:'URU', name:'Uruguai',       flag:'🇺🇾', c1:'#7ab8e6', c2:'#1f4e8c', conf:'CONMEBOL' },
-  { code:'COL', name:'Colômbia',      flag:'🇨🇴', c1:'#fcd116', c2:'#003893', conf:'CONMEBOL' },
-  { code:'ECU', name:'Equador',       flag:'🇪🇨', c1:'#ffd100', c2:'#0033a0', conf:'CONMEBOL' },
-  { code:'PAR', name:'Paraguai',      flag:'🇵🇾', c1:'#d52b1e', c2:'#0038a8', conf:'CONMEBOL' },
-  /* UEFA */
-  { code:'ENG', name:'Inglaterra',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', c1:'#e8e8e8', c2:'#cf081f', conf:'UEFA' },
-  { code:'FRA', name:'França',        flag:'🇫🇷', c1:'#3457d5', c2:'#1a2f7a', conf:'UEFA' },
-  { code:'GER', name:'Alemanha',      flag:'🇩🇪', c1:'#ffce00', c2:'#1f1f1f', conf:'UEFA' },
-  { code:'ESP', name:'Espanha',       flag:'🇪🇸', c1:'#ffc400', c2:'#c60b1e', conf:'UEFA' },
-  { code:'POR', name:'Portugal',      flag:'🇵🇹', c1:'#d62839', c2:'#0a6b3d', conf:'UEFA' },
-  { code:'NED', name:'Holanda',       flag:'🇳🇱', c1:'#ff7a00', c2:'#21468b', conf:'UEFA' },
-  { code:'BEL', name:'Bélgica',       flag:'🇧🇪', c1:'#fdda24', c2:'#ef3340', conf:'UEFA' },
-  { code:'CRO', name:'Croácia',       flag:'🇭🇷', c1:'#d80027', c2:'#0052b4', conf:'UEFA' },
-  { code:'NOR', name:'Noruega',       flag:'🇳🇴', c1:'#ba0c2f', c2:'#00205b', conf:'UEFA' },
-  { code:'AUT', name:'Áustria',       flag:'🇦🇹', c1:'#ed2939', c2:'#8c1d28', conf:'UEFA' },
-  { code:'SUI', name:'Suíça',         flag:'🇨🇭', c1:'#d52b1e', c2:'#8c1518', conf:'UEFA' },
-  { code:'SCO', name:'Escócia',       flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', c1:'#0065bf', c2:'#0a2e5c', conf:'UEFA' },
-  { code:'ITA', name:'Itália',        flag:'🇮🇹', c1:'#0066b2', c2:'#009246', conf:'UEFA' },
-  { code:'DEN', name:'Dinamarca',     flag:'🇩🇰', c1:'#c8102e', c2:'#7a0a1e', conf:'UEFA' },
-  { code:'TUR', name:'Turquia',       flag:'🇹🇷', c1:'#e30a17', c2:'#8c0610', conf:'UEFA' },
-  { code:'POL', name:'Polônia',       flag:'🇵🇱', c1:'#e8e8e8', c2:'#dc143c', conf:'UEFA' },
-  /* AFC */
-  { code:'JPN', name:'Japão',         flag:'🇯🇵', c1:'#1d2088', c2:'#bc002d', conf:'AFC' },
-  { code:'KOR', name:'Coreia do Sul', flag:'🇰🇷', c1:'#cd2e3a', c2:'#0047a0', conf:'AFC' },
-  { code:'IRN', name:'Irã',           flag:'🇮🇷', c1:'#239f40', c2:'#da0000', conf:'AFC' },
-  { code:'AUS', name:'Austrália',     flag:'🇦🇺', c1:'#ffcd00', c2:'#00843d', conf:'AFC' },
-  { code:'UZB', name:'Uzbequistão',   flag:'🇺🇿', c1:'#1eb53a', c2:'#0099b5', conf:'AFC' },
-  { code:'JOR', name:'Jordânia',      flag:'🇯🇴', c1:'#ce1126', c2:'#007a3d', conf:'AFC' },
-  { code:'KSA', name:'Arábia Saudita',flag:'🇸🇦', c1:'#006c35', c2:'#0a3d23', conf:'AFC' },
-  { code:'QAT', name:'Catar',         flag:'🇶🇦', c1:'#8a1538', c2:'#5c0e26', conf:'AFC' },
-  { code:'IRQ', name:'Iraque',        flag:'🇮🇶', c1:'#ce1126', c2:'#2b2b2b', conf:'AFC' },
-  /* CAF */
-  { code:'MAR', name:'Marrocos',      flag:'🇲🇦', c1:'#c1272d', c2:'#006233', conf:'CAF' },
-  { code:'SEN', name:'Senegal',       flag:'🇸🇳', c1:'#00853f', c2:'#fdef42', conf:'CAF' },
-  { code:'EGY', name:'Egito',         flag:'🇪🇬', c1:'#ce1126', c2:'#2b2b2b', conf:'CAF' },
-  { code:'ALG', name:'Argélia',       flag:'🇩🇿', c1:'#006233', c2:'#d21034', conf:'CAF' },
-  { code:'TUN', name:'Tunísia',       flag:'🇹🇳', c1:'#e70013', c2:'#8c0610', conf:'CAF' },
-  { code:'CIV', name:'C. do Marfim',  flag:'🇨🇮', c1:'#f77f00', c2:'#009e60', conf:'CAF' },
-  { code:'GHA', name:'Gana',          flag:'🇬🇭', c1:'#fcd116', c2:'#ce1126', conf:'CAF' },
-  { code:'RSA', name:'África do Sul', flag:'🇿🇦', c1:'#007a4d', c2:'#ffb612', conf:'CAF' },
-  { code:'CPV', name:'Cabo Verde',    flag:'🇨🇻', c1:'#003893', c2:'#cf2027', conf:'CAF' },
-  { code:'COD', name:'RD Congo',      flag:'🇨🇩', c1:'#007fff', c2:'#ce1021', conf:'CAF' },
-  /* OFC */
-  { code:'NZL', name:'N. Zelândia',   flag:'🇳🇿', c1:'#00247d', c2:'#1f1f1f', conf:'OFC' },
+  { code:'FWC', name:'FIFA World Cup', flag:'🏆', c1:'#ffd166', c2:'#8a5a1f', group:'FWC' },
+  /* Grupo A */
+  { code:'MEX', name:'México',        flag:'🇲🇽', c1:'#0a8f4e', c2:'#b3232f', group:'A' },
+  { code:'RSA', name:'África do Sul', flag:'🇿🇦', c1:'#007a4d', c2:'#ffb612', group:'A' },
+  { code:'KOR', name:'Coreia do Sul', flag:'🇰🇷', c1:'#cd2e3a', c2:'#0047a0', group:'A' },
+  { code:'CZE', name:'Rep. Tcheca',   flag:'🇨🇿', c1:'#d7141a', c2:'#11457e', group:'A' },
+  /* Grupo B */
+  { code:'CAN', name:'Canadá',        flag:'🇨🇦', c1:'#e63946', c2:'#7a0e1c', group:'B' },
+  { code:'BIH', name:'Bósnia',        flag:'🇧🇦', c1:'#fecb00', c2:'#002395', group:'B' },
+  { code:'QAT', name:'Catar',         flag:'🇶🇦', c1:'#8a1538', c2:'#5c0e26', group:'B' },
+  { code:'SUI', name:'Suíça',         flag:'🇨🇭', c1:'#d52b1e', c2:'#8c1518', group:'B' },
+  /* Grupo C */
+  { code:'BRA', name:'Brasil',        flag:'🇧🇷', c1:'#ffd60a', c2:'#0a7e3d', group:'C' },
+  { code:'MAR', name:'Marrocos',      flag:'🇲🇦', c1:'#c1272d', c2:'#006233', group:'C' },
+  { code:'HAI', name:'Haiti',         flag:'🇭🇹', c1:'#d21034', c2:'#00209f', group:'C' },
+  { code:'SCO', name:'Escócia',       flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', c1:'#0065bf', c2:'#0a2e5c', group:'C' },
+  /* Grupo D */
+  { code:'USA', name:'EUA',           flag:'🇺🇸', c1:'#b31942', c2:'#0a3161', group:'D' },
+  { code:'PAR', name:'Paraguai',      flag:'🇵🇾', c1:'#d52b1e', c2:'#0038a8', group:'D' },
+  { code:'AUS', name:'Austrália',     flag:'🇦🇺', c1:'#ffcd00', c2:'#00843d', group:'D' },
+  { code:'TUR', name:'Turquia',       flag:'🇹🇷', c1:'#e30a17', c2:'#8c0610', group:'D' },
+  /* Grupo E */
+  { code:'GER', name:'Alemanha',      flag:'🇩🇪', c1:'#ffce00', c2:'#1f1f1f', group:'E' },
+  { code:'CUW', name:'Curaçao',       flag:'🇨🇼', c1:'#f9e814', c2:'#002b7f', group:'E' },
+  { code:'CIV', name:'C. do Marfim',  flag:'🇨🇮', c1:'#f77f00', c2:'#009e60', group:'E' },
+  { code:'ECU', name:'Equador',       flag:'🇪🇨', c1:'#ffd100', c2:'#0033a0', group:'E' },
+  /* Grupo F */
+  { code:'NED', name:'Holanda',       flag:'🇳🇱', c1:'#ff7a00', c2:'#21468b', group:'F' },
+  { code:'JPN', name:'Japão',         flag:'🇯🇵', c1:'#1d2088', c2:'#bc002d', group:'F' },
+  { code:'SWE', name:'Suécia',        flag:'🇸🇪', c1:'#fecc02', c2:'#006aa7', group:'F' },
+  { code:'TUN', name:'Tunísia',       flag:'🇹🇳', c1:'#e70013', c2:'#8c0610', group:'F' },
+  /* Grupo G */
+  { code:'BEL', name:'Bélgica',       flag:'🇧🇪', c1:'#fdda24', c2:'#ef3340', group:'G' },
+  { code:'EGY', name:'Egito',         flag:'🇪🇬', c1:'#ce1126', c2:'#2b2b2b', group:'G' },
+  { code:'IRN', name:'Irã',           flag:'🇮🇷', c1:'#239f40', c2:'#da0000', group:'G' },
+  { code:'NZL', name:'N. Zelândia',   flag:'🇳🇿', c1:'#00247d', c2:'#1f1f1f', group:'G' },
+  /* Grupo H */
+  { code:'ESP', name:'Espanha',       flag:'🇪🇸', c1:'#ffc400', c2:'#c60b1e', group:'H' },
+  { code:'CPV', name:'Cabo Verde',    flag:'🇨🇻', c1:'#003893', c2:'#cf2027', group:'H' },
+  { code:'KSA', name:'Arábia Saudita',flag:'🇸🇦', c1:'#006c35', c2:'#0a3d23', group:'H' },
+  { code:'URU', name:'Uruguai',       flag:'🇺🇾', c1:'#7ab8e6', c2:'#1f4e8c', group:'H' },
+  /* Grupo I */
+  { code:'FRA', name:'França',        flag:'🇫🇷', c1:'#3457d5', c2:'#1a2f7a', group:'I' },
+  { code:'SEN', name:'Senegal',       flag:'🇸🇳', c1:'#00853f', c2:'#fdef42', group:'I' },
+  { code:'IRQ', name:'Iraque',        flag:'🇮🇶', c1:'#ce1126', c2:'#2b2b2b', group:'I' },
+  { code:'NOR', name:'Noruega',       flag:'🇳🇴', c1:'#ba0c2f', c2:'#00205b', group:'I' },
+  /* Grupo J */
+  { code:'ARG', name:'Argentina',     flag:'🇦🇷', c1:'#75c8f0', c2:'#3a86c8', group:'J' },
+  { code:'ALG', name:'Argélia',       flag:'🇩🇿', c1:'#006233', c2:'#d21034', group:'J' },
+  { code:'AUT', name:'Áustria',       flag:'🇦🇹', c1:'#ed2939', c2:'#8c1d28', group:'J' },
+  { code:'JOR', name:'Jordânia',      flag:'🇯🇴', c1:'#ce1126', c2:'#007a3d', group:'J' },
+  /* Grupo K */
+  { code:'POR', name:'Portugal',      flag:'🇵🇹', c1:'#d62839', c2:'#0a6b3d', group:'K' },
+  { code:'COD', name:'RD Congo',      flag:'🇨🇩', c1:'#007fff', c2:'#ce1021', group:'K' },
+  { code:'UZB', name:'Uzbequistão',   flag:'🇺🇿', c1:'#1eb53a', c2:'#0099b5', group:'K' },
+  { code:'COL', name:'Colômbia',      flag:'🇨🇴', c1:'#fcd116', c2:'#003893', group:'K' },
+  /* Grupo L */
+  { code:'ENG', name:'Inglaterra',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', c1:'#e8e8e8', c2:'#cf081f', group:'L' },
+  { code:'CRO', name:'Croácia',       flag:'🇭🇷', c1:'#d80027', c2:'#0052b4', group:'L' },
+  { code:'GHA', name:'Gana',          flag:'🇬🇭', c1:'#fcd116', c2:'#ce1126', group:'L' },
+  { code:'PAN', name:'Panamá',        flag:'🇵🇦', c1:'#da121a', c2:'#072357', group:'L' },
+  /* Coca-Cola */
+  { code:'CC',  name:'Coca-Cola',     flag:'🥤', c1:'#e61d2b', c2:'#7a0d16', group:'CC' },
 ];
 
-/* 6 figurinhas por seleção: Escudo (shiny) · 4 jogadores · Craque (lendária) */
+/* 20 figurinhas por seleção (numeração 1–20 como no álbum oficial):
+   Escudo (brilhante) · 18 jogadores · Craque (lendária) */
 const ROSTER = {
-  USA:['Escudo','McKennie','Weah','Reyna','Balogun','Pulisic'],
-  MEX:['Escudo','Lozano','E. Álvarez','R. Jiménez','Gallardo','S. Giménez'],
-  CAN:['Escudo','J. David','Eustáquio','Buchanan','Larin','A. Davies'],
-  PAN:['Escudo','Fajardo','Murillo','Blackman','Godoy','Carrasquilla'],
-  CUW:['Escudo','J. Bacuna','Gorré','Martina','Room','L. Bacuna'],
-  HAI:['Escudo','Pierrot','Jean Jacques','Etienne Jr.','Adé','Nazon'],
-  BRA:['Escudo','Vini Jr.','Rodrygo','Endrick','Bruno G.','Neymar'],
-  ARG:['Escudo','J. Álvarez','Mac Allister','E. Fernández','Lautaro','Messi'],
-  URU:['Escudo','D. Núñez','Araújo','Ugarte','Pellistri','Valverde'],
-  COL:['Escudo','James R.','J. Durán','R. Ríos','Muñoz','Luis Díaz'],
-  ECU:['Escudo','Pacho','Hincapié','Plata','K. Páez','M. Caicedo'],
-  PAR:['Escudo','Enciso','Cubas','Alderete','Sanabria','Almirón'],
-  ENG:['Escudo','Bellingham','Saka','Foden','Rice','Kane'],
-  FRA:['Escudo','Dembélé','Tchouaméni','Camavinga','Saliba','Mbappé'],
-  GER:['Escudo','Wirtz','Kimmich','Havertz','Rüdiger','Musiala'],
-  ESP:['Escudo','Pedri','Rodri','N. Williams','Olmo','Lamine Yamal'],
-  POR:['Escudo','B. Fernandes','R. Leão','Vitinha','J. Neves','Cristiano'],
-  NED:['Escudo','Gakpo','F. de Jong','Simons','Dumfries','Van Dijk'],
-  BEL:['Escudo','Doku','Lukaku','A. Onana','Trossard','De Bruyne'],
-  CRO:['Escudo','Gvardiol','Kovačić','Sučić','Kramarić','Modrić'],
-  NOR:['Escudo','Ødegaard','Sørloth','Nusa','Berge','Haaland'],
-  AUT:['Escudo','Sabitzer','Laimer','Baumgartner','Arnautović','Alaba'],
-  SUI:['Escudo','Embolo','Sommer','Ndoye','Rieder','Xhaka'],
-  SCO:['Escudo','Robertson','McGinn','Gilmour','C. Adams','McTominay'],
-  ITA:['Escudo','Barella','Tonali','Retegui','Bastoni','Donnarumma'],
-  DEN:['Escudo','Højlund','Hjulmand','Isaksen','Maehle','Eriksen'],
-  TUR:['Escudo','Çalhanoğlu','K. Yıldız','Kökçü','Demiral','Arda Güler'],
-  POL:['Escudo','Zieliński','Świderski','Cash','Zalewski','Lewandowski'],
-  JPN:['Escudo','Mitoma','Endo','Kamada','Doan','Kubo'],
-  KOR:['Escudo','Lee Kang-in','Kim Min-jae','Hwang Hee-chan','Cho Gue-sung','Son'],
-  IRN:['Escudo','Azmoun','Jahanbakhsh','Hajsafi','Ghoddos','Taremi'],
-  AUS:['Escudo','Souttar','Goodwin','Duke','Ryan','Irvine'],
-  UZB:['Escudo','Shomurodov','Fayzullaev','Urunov','Yuldoshev','Khusanov'],
-  JOR:['Escudo','Al-Naimat','Olwan','Haddad','Abualnadi','Al-Tamari'],
-  KSA:['Escudo','Kanno','Al-Buraikan','Al-Shehri','Al-Owais','Al-Dawsari'],
-  QAT:['Escudo','Almoez Ali','Muntari','Hassan','Barsham','Akram Afif'],
-  IRQ:['Escudo','Ali Jasim','Z. Iqbal','Al-Ammari','J. Hassan','Aymen Hussein'],
-  MAR:['Escudo','Brahim Díaz','En-Nesyri','Amrabat','Bounou','Hakimi'],
-  SEN:['Escudo','I. Sarr','N. Jackson','P. M. Sarr','Koulibaly','Mané'],
-  EGY:['Escudo','Marmoush','Trezeguet','Zizo','Hamdi','Salah'],
-  ALG:['Escudo','Amoura','Aouar','Gouiri','Bentaleb','Mahrez'],
-  TUN:['Escudo','Hannibal','Laidouni','Talbi','Khenissi','Msakni'],
-  CIV:['Escudo','Haller','Pépé','S. Fofana','Adingra','Kessié'],
-  GHA:['Escudo','Partey','Semenyo','I. Williams','Lamptey','Kudus'],
-  RSA:['Escudo','Zwane','Foster','Mokoena','R. Williams','Tau'],
-  CPV:['Escudo','Bebé','J. Monteiro','G. Rodrigues','Vozinha','Ryan Mendes'],
-  COD:['Escudo','Bakambu','Mbemba','Masuaku','Mayele','Wissa'],
-  NZL:['Escudo','Cacace','Garbett','Bell','Stamenić','Chris Wood'],
+  FWC:['Logo Copa 2026','Troféu FIFA','Bola Trionda','Maple','Zayu','Clutch','Estádio Azteca','SoFi Stadium','BMO Field','MetLife Stadium','História · 1930','História · 1958','História · 1966','História · 1970','História · 1986','História · 1994','História · 1998','História · 2002','História · 2010','História · 2022'],
+  CC:['Pelé','Maradona','Zidane','Ronaldo','Ronaldinho','Beckham','Cafu','Buffon','Iniesta','Drogba','Kaká','Pirlo','Forlán','Klose'],
+  USA:['Escudo','Turner','Dest','Richards','Ream','Robinson','McKenzie','Adams','Musah','McKennie','Reyna','De la Torre','Weah','Balogun','Ferreira','Aaronson','Sargent','Tillman','Scally','Pulisic'],
+  MEX:['Escudo','Malagón','J. Sánchez','Montes','Vásquez','Gallardo','Arteaga','E. Álvarez','Romo','L. Chávez','Pineda','Lira','Lozano','R. Jiménez','Vega','Antuna','Huerta','Quiñones','Zendejas','S. Giménez'],
+  CAN:['Escudo','Crépeau','Johnston','Miller','Cornelius','Laryea','Bombito','Eustáquio','Koné','Osorio','Buchanan','Shaffelburg','J. David','Larin','Cavallini','Ugbo','Millar','Oluwaseyi','Hoilett','A. Davies'],
+  PAN:['Escudo','Mosquera','Murillo','Andrade','Escobar','Davis','Godoy','Cárdenas','Bárcenas','Quintero','Yanis','Fajardo','Blackman','Waterman','Browne','Díaz','Walder','Harvey','Ayarza','Carrasquilla'],
+  CUW:['Escudo','Room','Martina','Van Eijma','Obispo','St. Jago','Margaritha','J. Bacuna','Gorré','Janga','Kastaneer','Locadia','Antonia','Hooi','Maria','Paal','Irausquin','Davelaar','Sambo','L. Bacuna'],
+  HAI:['Escudo','Placide','Arcus','Lafrance','Adé','Casimir','Geffrard','Jean Jacques','Saba','Damus','Pierrot','Etienne Jr.','Cantave','Borgella','Dor','Milien','Théodore','Bazile','Louicius','Nazon'],
+  BRA:['Escudo','Alisson','Danilo','Marquinhos','Gabriel M.','Militão','Wendell','Casemiro','Bruno G.','Paquetá','Gerson','André','Vini Jr.','Rodrygo','Raphinha','Endrick','Martinelli','M. Cunha','Estêvão','Neymar'],
+  ARG:['Escudo','Dibu Martínez','Molina','C. Romero','Otamendi','Lisandro M.','Tagliafico','De Paul','E. Fernández','Mac Allister','Paredes','Lo Celso','J. Álvarez','Lautaro','N. González','Garnacho','Dybala','Almada','Palacios','Messi'],
+  URU:['Escudo','Rochet','R. Araújo','J. Giménez','M. Olivera','Nández','S. Bueno','Ugarte','Bentancur','De Arrascaeta','De la Cruz','Varela','D. Núñez','Aguirre','B. Rodríguez','M. Araújo','Viña','Pellistri','Ocampo','Valverde'],
+  COL:['Escudo','C. Vargas','Muñoz','D. Sánchez','Lucumí','Mojica','Arias','Lerma','R. Ríos','Uribe','James R.','Quintero','Carrascal','J. Durán','Borré','Córdoba','Borja','Sinisterra','Castaño','Luis Díaz'],
+  ECU:['Escudo','Galíndez','Pacho','Hincapié','F. Torres','Preciado','Estupiñán','Gruezo','A. Franco','Sarmiento','K. Páez','Plata','E. Valencia','Estrada','Yeboah','Medina','Mena','Ramírez','Cifuentes','M. Caicedo'],
+  PAR:['Escudo','Coronel','G. Gómez','Alderete','Balbuena','Espínola','J. Alonso','Cubas','Villasanti','Bobadilla','O. Romero','Á. Romero','Enciso','Sanabria','Sosa','D. González','R. Sánchez','Ávalos','Galarza','Almirón'],
+  ENG:['Escudo','Pickford','Walker','Stones','Guéhi','Colwill','Alexander-Arnold','Rice','Bellingham','Mainoo','Foden','Palmer','Saka','Gordon','Watkins','Rashford','Eze','Konsa','Branthwaite','Kane'],
+  FRA:['Escudo','Maignan','Koundé','Saliba','Upamecano','T. Hernández','Pavard','Tchouaméni','Camavinga','Rabiot','Griezmann','Zaïre-Emery','Dembélé','Kolo Muani','Thuram','Coman','Barcola','Olise','Doué','Mbappé'],
+  GER:['Escudo','ter Stegen','Kimmich','Rüdiger','Tah','Schlotterbeck','Raum','Goretzka','Andrich','Wirtz','Pavlović','Mittelstädt','Havertz','Füllkrug','Sané','Gnabry','Adeyemi','Undav','Stiller','Musiala'],
+  ESP:['Escudo','Unai Simón','Carvajal','Le Normand','Laporte','Cucurella','Grimaldo','Rodri','Pedri','Fabián','Olmo','Zubimendi','N. Williams','Morata','Oyarzabal','Ferran','Merino','Baena','Cubarsí','Lamine Yamal'],
+  POR:['Escudo','D. Costa','Cancelo','R. Dias','António Silva','N. Mendes','Dalot','Vitinha','J. Neves','B. Fernandes','B. Silva','Palhinha','R. Leão','G. Ramos','Conceição','Trincão','P. Neto','Inácio','R. Neves','Cristiano'],
+  NED:['Escudo','Verbruggen','Dumfries','De Vrij','Aké','Van de Ven','Frimpong','F. de Jong','Reijnders','Schouten','Simons','Veerman','Gakpo','Depay','Weghorst','Malen','Lang','Brobbey','Timber','Van Dijk'],
+  BEL:['Escudo','Courtois','Castagne','Faes','Theate','Debast','De Cuyper','A. Onana','Tielemans','Vanaken','Trossard','Carrasco','Doku','Lukaku','Openda','Bakayoko','De Ketelaere','Lukebakio','Saelemaekers','De Bruyne'],
+  CRO:['Escudo','Livaković','Stanišić','Šutalo','Gvardiol','Perišić','Juranović','Brozović','Kovačić','Sučić','Pašalić','Majer','Kramarić','Budimir','Petković','Baturina','Moro','Erlić','Ivanušec','Modrić'],
+  NOR:['Escudo','Nyland','Ryerson','Ajer','Østigård','Heggem','Meling','Berge','Ødegaard','Thorsby','Bobb','Nusa','Sørloth','Strand Larsen','Elyounoussi','Aursnes','Hauge','Schjelderup','Donnum','Haaland'],
+  AUT:['Escudo','A. Schlager','Posch','Danso','Lienhart','Mwene','Wöber','X. Schlager','Seiwald','Laimer','Sabitzer','Baumgartner','Arnautović','Gregoritsch','Schmid','Wimmer','Prass','Grüll','Querfeld','Alaba'],
+  SUI:['Escudo','Sommer','Widmer','Akanji','Elvedi','Schär','R. Rodríguez','Freuler','Sow','Rieder','R. Vargas','Aebischer','Embolo','Ndoye','Amdouni','Okafor','Itten','Sierro','Zakaria','Xhaka'],
+  SCO:['Escudo','Gunn','Hickey','Hanley','McKenna','Tierney','Robertson','Gilmour','McGinn','L. Ferguson','Christie','McLean','C. Adams','Dykes','Shankland','Doak','J. Souttar','Ralston','Hendry','McTominay'],
+  CZE:['Escudo','Staněk','Coufal','L. Krejčí','Holeš','Douděra','Vlček','Souček','Barák','Sadílek','Provod','Šulc','Černý','Ševčík','Lingr','Hložek','Kuchta','Chorý','Vydra','Schick'],
+  BIH:['Escudo','Vasilj','Barišić','Bičakčić','Hadžikadunić','Kolašinac','Dedić','Cimirot','Krunić','Hadžiahmetović','Huseinbašić','Tahirović','Gigović','Memić','Hajradinović','Demirović','Prevljak','Bajraktarević','Katić','Džeko'],
+  SWE:['Escudo','Olsen','Krafth','Lindelöf','Hien','Starfelt','Augustinsson','Svanberg','Cajuste','Ayari','Karlström','Forsberg','Kulusevski','Elanga','Gyökeres','Nygren','Bergvall','Nanasi','Claesson','Isak'],
+  TUR:['Escudo','Çakır','Müldür','Demiral','Bardakcı','Kadıoğlu','Ayhan','Çalhanoğlu','Kökçü','Yüksek','Aktürkoğlu','Yazıcı','K. Yıldız','Ünder','Tosun','Akgün','Kılıçsoy','Özcan','Ünal','Arda Güler'],
+  JPN:['Escudo','Z. Suzuki','Sugawara','Tomiyasu','Itakura','Machida','H. Ito','Endo','Morita','Kamada','Mitoma','Doan','Ueda','Asano','Maeda','Minamino','Furuhashi','A. Tanaka','J. Ito','Kubo'],
+  KOR:['Escudo','Jo Hyeon-woo','Kim Min-jae','Kim Young-gwon','Lee Ki-je','Seol Young-woo','Kim Moon-hwan','Hwang In-beom','Lee Jae-sung','Lee Kang-in','Paik Seung-ho','Hong Hyun-seok','Hwang Hee-chan','Cho Gue-sung','Oh Hyeon-gyu','Jeong Woo-yeong','Eom Ji-sung','Bae Jun-ho','Yang Hyun-jun','Son'],
+  IRN:['Escudo','Beiranvand','Rezaeian','Moharrami','Khalilzadeh','Hosseini','Mohammadi','Cheshmi','Ezatolahi','Hajsafi','Gholizadeh','Jahanbakhsh','Ghoddos','Torabi','Azmoun','Ansarifard','Mohebi','Sayyadmanesh','Niazmand','Taremi'],
+  AUS:['Escudo','M. Ryan','Atkinson','H. Souttar','Rowles','Behich','Burgess',"O'Neill",'Metcalfe','Baccus','Goodwin','McGree','Duke','Boyle','Kuol','Yengi','Borrello','Velupillay','Tilio','Irvine'],
+  UZB:['Escudo','Yusupov','Ashurmatov','Eshmurodov','Khashimov','Alijonov','Masharipov','Urunov','Fayzullaev','Khamdamov','Iskanderov','Yuldoshev','Shomurodov','Sergeev','Turgunboev','Erkinov','Abdullaev','Norchaev','Hamrobekov','Khusanov'],
+  JOR:['Escudo','Abu Laila','Al-Arab','Nasib','Haddad','Abualnadi','Al-Ajalin','Al-Rashdan','Rateb','Al-Rawabdeh','Ayed','Al-Mardi','Al-Naimat','Olwan','Abu Hashish','Al-Dmeiri','Hantouli','Abu Zrayq','Al-Zebdieh','Al-Tamari'],
+  KSA:['Escudo','Al-Owais','Abdulhamid','Al-Amri','Al-Bulayhi','Al-Shahrani','Al-Tambakti','Kanno','Al-Malki','Al-Najei','Al-Khaibari','Al-Juwayr','Al-Buraikan','Al-Shehri','Asiri','Al-Ghannam','Radif','Al-Aboud','Al-Faraj','Al-Dawsari'],
+  QAT:['Escudo','Barsham','Ró-Ró','Khoukhi','Salman','H. Ahmed','Waad','Madibo','Hatem','Boudiaf','Al-Haydos','Fathi','Almoez Ali','Muntari','Alaaeldin','M. Gaber','Mazeed','Al-Ganehi','Al-Rawi','Akram Afif'],
+  IRQ:['Escudo','J. Hassan','Doski','Tahseen','Ali-Abbas','Hussein Ali','A. Hashim','Al-Ammari','Z. Iqbal','Bayesh','Amyn','B. Resan','Ali Jasim','Mohanad Ali','Al-Hamadi','Jabbar','Naseef','Karrar','Yaseen','Aymen Hussein'],
+  MAR:['Escudo','Bounou','Mazraoui','Aguerd','El Yamiq','Attiyat-Allah','Dari','Amrabat','Ounahi','Amallah','El Khannouss','Adli','Brahim Díaz','En-Nesyri','Ezzalzouli','Rahimi','Targhalline','Igamane','Saibari','Hakimi'],
+  SEN:['Escudo','É. Mendy','Koulibaly','Niakhaté','A. Diallo','Sabaly','Jakobs','I. Gueye','P. M. Sarr','L. Camara','P. Gueye','Diatta','I. Sarr','N. Jackson','B. Dia','H. Diallo','I. Ndiaye','Sima','Ciss','Mané'],
+  EGY:['Escudo','El-Shenawy','Hamdi','Hegazi','Abdelmonem','O. Kamal','Fatouh','H. Fathi','Elneny','E. Ashour','Trezeguet','Zizo','Marmoush','M. Mohamed','I. Adel','T. Mohamed','Attia','Faisal','Sobhi','Salah'],
+  ALG:['Escudo','Mandrea','Atal','Mandi','Bensebaini','Aït-Nouri','Tougai','Bennacer','Bentaleb','Aouar','Zorgane','Bendebka','Amoura','Gouiri','Bounedjah','Chaibi','Belaïli','Ounas','Boudaoui','Mahrez'],
+  TUN:['Escudo','Ben Saïd','Talbi','Meriah','Bronn','Abdi','Kechrida','Laidouni','Skhiri','Hannibal','Sassi','Romdhane','Khenissi','Jaziri','Mastouri','Achouri','Ltaief','Ben Slimane','Sliti','Msakni'],
+  CIV:['Escudo','Y. Fofana','Aurier','Ndicka','Konan','Singo','Diomandé','S. Fofana','Sangaré','Seri','Kossounou','Gradel','Pépé','Haller','Adingra','Krasso','Boga','Zaha','Cornet','Kessié'],
+  GHA:['Escudo','Ati-Zigi','Lamptey','Salisu','Djiku','Amartey','G. Mensah','Partey','Samed','K. Sulemana','J. Ayew','A. Ayew','Semenyo','I. Williams','F. Nuamah','J. Paintsil','Bukari','Fatawu','Ashimeru','Kudus'],
+  RSA:['Escudo','R. Williams','Mudau','Mvala','Kekana','Modiba','Mokoena','Sithole','Zwane','Morena','Appollis','Aubaas','L. Foster','Makgopa','Mayambela','Mokwana','Rayners','Mbule','Maswanganyi','Tau'],
+  CPV:['Escudo','Vozinha','R. Lopes','Logan Costa','Stopira','Diney','K. Pina','J. Monteiro','D. Duarte','K. Rocha','Bebé','G. Rodrigues','Djaniny','W. Semedo','J. Tavares','Heriberto','Gilson','Livramento','Lenini','Ryan Mendes'],
+  COD:['Escudo','Mpasi','Mbemba','Masuaku','Kabasele','Tuanzebe','Inonga','Pickel','Moutoussamy','Kayembe','Kakuta','Bongonda','Bakambu','Mayele','M. Elia','Bolasie','Muleka','Kalonji','Wan-Bissaka','Wissa'],
+  NZL:['Escudo','Crocombe','Boxall','Pijnaker','Tuiloma','Cacace','Payne','Stamenić','Garbett','McCowatt','C. Lewis','S. Singh','Bell','Just','Waine','Barbarouses','Greive','Old','T. Smith','Chris Wood'],
 };
 
-const CONFS = ['CONCACAF','CONMEBOL','UEFA','AFC','CAF','OFC'];
+/* Ícones e legendas das seções especiais */
+const FWC_ICONS = ['🎫','🏆','⚽','🫎','🐆','🦅','🏟️','🏟️','🏟️','🏟️','📜','📜','📜','📜','📜','📜','📜','📜','📜','📜'];
+const FWC_SUBS  = ['Página Inicial','Troféu','Bola Oficial','Mascote · CAN','Mascote · MEX','Mascote · USA','Cidade do México','Los Angeles','Toronto','Nova York/NJ','Uruguai Campeão','Brasil Campeão','Inglaterra Campeã','Brasil Campeão','Argentina Campeã','Brasil Campeão','França Campeã','Brasil Campeão','Espanha Campeã','Argentina Campeã'];
+
+const GROUP_DEFS = [
+  { key:'FWC', title:'Especiais' },
+  ...'ABCDEFGHIJKL'.split('').map(g => ({ key:g, title:`Grupo ${g}` })),
+  { key:'CC', title:'Coca-Cola' },
+];
 
 const STICKERS = TEAMS.flatMap(team =>
-  ROSTER[team.code].map((label, i) => ({
-    id: `${team.code}-${i + 1}`,
-    num: i + 1,
-    label,
-    team,
-    rarity: i === 0 ? 'shiny' : i === 5 ? 'legend' : 'common',
-  }))
+  ROSTER[team.code].map((label, i) => {
+    const last = ROSTER[team.code].length - 1;
+    const isFWC = team.code === 'FWC';
+    const isCC = team.code === 'CC';
+    return {
+      id: `${team.code}-${i + 1}`,
+      num: i + 1,
+      label,
+      team,
+      special: isFWC || isCC,
+      /* numeração igual à do álbum: FWC 00–19 · seleções 1–20 · CC 01–14 */
+      codeLabel: isFWC ? `FWC·${String(i).padStart(2,'0')}` : `${team.code}·${String(i + 1).padStart(2,'0')}`,
+      rarity: isCC
+        ? 'legend'
+        : isFWC
+          ? (i === 1 ? 'legend' : i <= 5 ? 'shiny' : 'common')
+          : (i === 0 ? 'shiny' : i === last ? 'legend' : 'common'),
+      icon: isFWC ? FWC_ICONS[i] : isCC ? '⭐' : null,
+      sub: isFWC ? FWC_SUBS[i] : isCC ? 'Lenda Coca-Cola' : null,
+    };
+  })
 );
 const STICKER_MAP = Object.fromEntries(STICKERS.map(s => [s.id, s]));
 
 /* Coleção inicial (0 = não tem, 1 = tenho, >1 = repetidas) */
 const INITIAL_COUNTS = {
-  'BRA-1':1,'BRA-2':3,'BRA-3':1,'BRA-4':2,'BRA-6':1,
-  'ARG-1':2,'ARG-3':1,'ARG-5':4,
-  'USA-2':1,'USA-4':2,
-  'MEX-1':1,'MEX-2':2,'MEX-5':1,
-  'CAN-3':3,'CAN-4':1,
-  'FRA-1':1,'FRA-2':1,'FRA-4':2,
-  'GER-3':1,'GER-5':2,
-  'POR-2':2,'POR-4':1,
+  'BRA-1':1,'BRA-9':2,'BRA-13':3,'BRA-14':1,'BRA-20':1,
+  'ARG-1':2,'ARG-10':1,'ARG-13':4,
+  'USA-2':1,'USA-12':2,
+  'MEX-1':1,'MEX-13':2,
+  'CAN-3':3,'CAN-13':1,
+  'FRA-1':1,'FRA-8':2,'FRA-13':1,
+  'GER-2':2,'GER-10':1,
+  'POR-9':2,'POR-12':1,
+  'FWC-2':1,'FWC-3':2,'FWC-7':1,
+  'CC-1':1,
 };
 
 /* Amigos — mock para o algoritmo de matches */
 const FRIENDS = [
   {
     id:'pedro', name:'Pedro', emoji:'🧢', color:'#00e5ff',
-    has:  ['FRA-3','BRA-5','GER-1','USA-1','MEX-1','POR-4','ARG-3'],
-    needs:['MEX-2','POR-2','BRA-3','FRA-1','GER-3','CAN-3'],
+    has:  ['FRA-14','BRA-8','GER-20','USA-20','MEX-2','POR-20','ARG-14'],
+    needs:['MEX-13','POR-9','BRA-14','FRA-13','GER-9','CAN-13'],
   },
   {
     id:'lucas', name:'Lucas', emoji:'⚡', color:'#00ff87',
-    has:  ['BRA-5','ARG-2','ARG-6','USA-3','CAN-1','GER-2','POR-3','BRA-1'],
-    needs:['BRA-2','ARG-5','CAN-3','FRA-4','GER-5','USA-4','MEX-4','POR-5'],
+    has:  ['BRA-16','ARG-8','ARG-20','USA-10','CAN-2','GER-12','POR-13','BRA-1'],
+    needs:['BRA-13','ARG-13','CAN-3','FRA-8','GER-2','USA-12','MEX-15','POR-15'],
   },
   {
     id:'mariana', name:'Mariana', emoji:'🌟', color:'#b96bff',
-    has:  ['MEX-4','MEX-6','CAN-2','GER-4','POR-6','USA-2','FRA-2'],
-    needs:['ARG-5','BRA-2','GER-5','USA-4','ARG-3','CAN-4'],
+    has:  ['MEX-4','MEX-20','CAN-9','GER-13','POR-17','USA-2','FRA-2'],
+    needs:['ARG-13','BRA-9','GER-2','USA-12','ARG-10','CAN-13'],
   },
 ];
 
@@ -355,12 +392,12 @@ const FRIENDS = [
 function usePersistedCounts() {
   const [counts, setCounts] = useState(() => {
     try {
-      const raw = localStorage.getItem('stickr26');
+      const raw = localStorage.getItem('stickr26-v2');
       return raw ? JSON.parse(raw) : INITIAL_COUNTS;
     } catch { return INITIAL_COUNTS; }
   });
   useEffect(() => {
-    try { localStorage.setItem('stickr26', JSON.stringify(counts)); } catch {}
+    try { localStorage.setItem('stickr26-v2', JSON.stringify(counts)); } catch {}
   }, [counts]);
   return [counts, setCounts];
 }
@@ -597,17 +634,17 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
             {/* topo: número + raridade */}
             <div className="relative flex items-start justify-between px-2 pt-1.5">
               <span className="font-mono font-bold text-[10px] px-1.5 py-0.5 rounded bg-black/45 text-white/90">
-                {team.code}·{String(sticker.num).padStart(2,'0')}
+                {sticker.codeLabel}
               </span>
               {isShiny && <span className="text-white drop-shadow"><Icon.spark width="13" height="13"/></span>}
               {isLegend && <span className="text-yellow-200 drop-shadow"><Icon.spark width="15" height="15"/></span>}
             </div>
 
-            {/* centro: bandeira */}
+            {/* centro: bandeira (ou ícone especial) */}
             <div className="relative flex-1 flex flex-col items-center justify-center">
-              <span className="text-[42px] sm:text-[38px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{team.flag}</span>
+              <span className="text-[42px] sm:text-[38px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{sticker.icon || team.flag}</span>
               {isLegend && (
-                <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-yellow-100/90 bg-black/35 px-2 py-0.5 rounded-full">craque</span>
+                <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-yellow-100/90 bg-black/35 px-2 py-0.5 rounded-full">{sticker.special ? 'lendária' : 'craque'}</span>
               )}
               {isShiny && (
                 <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-white/90 bg-black/35 px-2 py-0.5 rounded-full">brilhante</span>
@@ -621,16 +658,16 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
                      style={isLegend ? { backgroundImage:'linear-gradient(90deg,#ffd166,#00ff87,#00e5ff)' } : {}}>
                   {isLegend ? `★ ${sticker.label}` : sticker.label}
                 </div>
-                <div className="font-mono text-[8px] uppercase tracking-[.22em] text-dim mt-0.5 truncate">{team.name}</div>
+                <div className="font-mono text-[8px] uppercase tracking-[.22em] text-dim mt-0.5 truncate">{sticker.sub || team.name}</div>
               </div>
             </div>
           </div>
         ) : (
           /* ============ SLOT VAZIO (página do álbum) ============ */
           <div className="relative h-full w-full flex flex-col items-center justify-center">
-            <span className="absolute top-2 left-2.5 font-mono text-[10px] text-white/25">{team.code}·{String(sticker.num).padStart(2,'0')}</span>
+            <span className="absolute top-2 left-2.5 font-mono text-[10px] text-white/25">{sticker.codeLabel}</span>
             <span className="absolute font-display font-black text-[64px] text-white/[.04] no-select">{sticker.num}</span>
-            <span className="text-white/[.13]"><Icon.player width="44" height="44"/></span>
+            <span className="text-white/[.13]">{sticker.special ? <Icon.spark width="40" height="40"/> : <Icon.player width="44" height="44"/>}</span>
             <span className="mt-2 font-semibold text-[11px] text-white/30 text-center px-2 leading-tight">{sticker.label}</span>
             <span className="mt-2 font-mono text-[8px] uppercase tracking-[.3em] text-white/20 border border-white/10 rounded-full px-2.5 py-1">faltando</span>
           </div>
@@ -681,11 +718,11 @@ function TeamSection({ team, counts, onInc, onDec, open, onToggle, delay }) {
         <div className="w-14 h-1 rounded-full bg-white/[.07] overflow-hidden">
           <div className="bar-fill h-full" style={{ width:`${(got/list.length)*100}%`, background:'linear-gradient(90deg,#00e5ff,#00ff87)' }}/>
         </div>
-        <span className="font-mono text-[11px] text-dim w-7 text-right">{got}/{list.length}</span>
+        <span className="font-mono text-[11px] text-dim w-10 text-right">{got}/{list.length}</span>
       </button>
 
       {open && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mt-3 px-0.5 anim-fadeup">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 mt-3 px-0.5 anim-fadeup">
           {list.map(s => (
             <StickerCard key={s.id} sticker={s} count={counts[s.id] || 0} onInc={onInc} onDec={onDec}/>
           ))}
@@ -696,72 +733,113 @@ function TeamSection({ team, counts, onInc, onDec, open, onToggle, delay }) {
 }
 
 function AlbumTab({ counts, onInc, onDec }) {
-  const [conf, setConf] = useState('Todas');
+  const [group, setGroup] = useState('Todas');
+  const [sort, setSort] = useState('grupo'); // 'grupo' | 'az'
   const [q, setQ] = useState('');
-  const [open, setOpen] = useState({ BRA: true });
+  const [open, setOpen] = useState({ FWC: true, BRA: true });
   const query = norm(q.trim());
 
-  const visible = TEAMS.filter(t =>
-    (conf === 'Todas' || t.conf === conf) &&
-    (!query || norm(t.name).includes(query) || t.code.toLowerCase().includes(query) ||
-      ROSTER[t.code].some(n => norm(n).includes(query)))
-  );
+  const matchTeam = (t) =>
+    !query || norm(t.name).includes(query) || t.code.toLowerCase().includes(query) ||
+    ROSTER[t.code].some(n => norm(n).includes(query));
 
   const toggle = (code) => setOpen(o => ({ ...o, [code]: !o[code] }));
 
+  const renderTeam = (team, ti) => (
+    <TeamSection
+      key={team.code}
+      team={team}
+      counts={counts}
+      onInc={onInc}
+      onDec={onDec}
+      open={!!open[team.code] || !!query}
+      onToggle={() => toggle(team.code)}
+      delay={ti * 35}
+    />
+  );
+
+  let body = null;
+  let total = 0;
+  if (sort === 'az') {
+    const teams = TEAMS
+      .filter(t => (group === 'Todas' || t.group === group) && matchTeam(t))
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+    total = teams.length;
+    body = teams.map(renderTeam);
+  } else {
+    const blocks = GROUP_DEFS
+      .filter(d => group === 'Todas' || group === d.key)
+      .map(def => {
+        const gTeams = TEAMS.filter(t => t.group === def.key && matchTeam(t));
+        if (gTeams.length === 0) return null;
+        total += gTeams.length;
+        return (
+          <div key={def.key}>
+            <div className="flex items-center gap-3 mt-6 mb-3 px-1 first:mt-0">
+              <span className="font-display font-extrabold text-[12px] uppercase tracking-[.3em] text-cyan26">{def.title}</span>
+              <span className="flex-1 h-px bg-gradient-to-r from-cyan26/30 to-transparent"/>
+            </div>
+            {gTeams.map(renderTeam)}
+          </div>
+        );
+      });
+    body = blocks;
+  }
+
   return (
-    <div className="px-4 pb-10 max-w-2xl mx-auto">
+    <div className="px-4 pb-10 max-w-2xl lg:max-w-5xl 2xl:max-w-7xl mx-auto">
       <div className="glass rounded-xl px-4 py-2.5 mb-4 flex items-center gap-3 text-[11px] text-dim">
         <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-cyan26 animate-pulse"/>
         <span><b className="text-white/80">Toque</b> para colar · toque de novo p/ <b className="text-neon">repetida</b> · <b className="text-white/80">segure</b> ou use <b className="text-white/80">(–)</b> p/ ajustar</span>
       </div>
 
-      {/* busca */}
-      <div className="glass rounded-2xl flex items-center gap-2.5 px-4 py-3 mb-3">
-        <span className="text-dim shrink-0"><Icon.search width="16" height="16"/></span>
-        <input
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Buscar seleção ou jogador…"
-          className="bg-transparent outline-none w-full text-[14px] placeholder:text-dim/60"
-        />
-        {q && (
-          <button onClick={() => setQ('')} className="text-dim hover:text-white shrink-0"><Icon.close width="14" height="14"/></button>
-        )}
+      {/* busca + ordenação */}
+      <div className="flex gap-2 mb-3">
+        <div className="glass rounded-2xl flex items-center gap-2.5 px-4 py-3 flex-1 min-w-0">
+          <span className="text-dim shrink-0"><Icon.search width="16" height="16"/></span>
+          <input
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="Buscar seleção ou jogador…"
+            className="bg-transparent outline-none w-full text-[14px] placeholder:text-dim/60"
+          />
+          {q && (
+            <button onClick={() => setQ('')} className="text-dim hover:text-white shrink-0"><Icon.close width="14" height="14"/></button>
+          )}
+        </div>
+        <div className="glass rounded-2xl p-1 flex items-center shrink-0">
+          {[['grupo','Grupos'],['az','A–Z']].map(([key, label]) => (
+            <button key={key} onClick={() => setSort(key)}
+                    className={`font-mono text-[11px] uppercase tracking-wider px-3 py-2 rounded-xl transition-all duration-300
+                      ${sort === key ? 'bg-cyan26/15 text-cyan26 border border-cyan26/40' : 'text-dim hover:text-white/80 border border-transparent'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* filtro por confederação */}
-      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4">
-        {['Todas', ...CONFS].map(c => (
-          <button key={c} onClick={() => setConf(c)}
+      {/* filtro por grupo */}
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4">
+        {[{ key:'Todas', title:'Todas' }, ...GROUP_DEFS].map(d => (
+          <button key={d.key} onClick={() => setGroup(d.key === group ? 'Todas' : d.key)}
                   className={`shrink-0 font-mono text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all duration-300 active:scale-95
-                    ${conf === c
+                    ${group === d.key
                       ? 'border-cyan26/60 text-cyan26 bg-cyan26/10'
                       : 'border-white/10 text-dim hover:text-white/80 hover:border-white/25'}`}>
-            {c}
+            {d.title}
           </button>
         ))}
       </div>
 
-      {visible.length === 0 && (
+      {total === 0 && (
         <div className="anim-fadeup glass rounded-2xl py-14 flex flex-col items-center gap-3 text-dim">
           <Icon.search width="30" height="30" className="opacity-40"/>
           <span className="text-sm">Nada encontrado para “{q}”</span>
         </div>
       )}
 
-      {visible.map((team, ti) => (
-        <TeamSection
-          key={team.code}
-          team={team}
-          counts={counts}
-          onInc={onInc}
-          onDec={onDec}
-          open={!!open[team.code] || !!query}
-          onToggle={() => toggle(team.code)}
-          delay={ti * 35}
-        />
-      ))}
+      {body}
     </div>
   );
 }
@@ -774,7 +852,7 @@ function CopiesTab({ counts, onInc, onDec }) {
   const total = dupes.reduce((a, s) => a + counts[s.id] - 1, 0);
 
   return (
-    <div className="px-4 pb-10 pt-6 max-w-2xl mx-auto">
+    <div className="px-4 pb-10 pt-6 max-w-2xl lg:max-w-5xl 2xl:max-w-7xl mx-auto">
       <div className="anim-fadeup mb-6">
         <h2 className="font-display font-extrabold text-2xl">Minhas <span className="text-neon">Repetidas</span></h2>
         <p className="text-dim text-[13px] mt-1">
@@ -785,7 +863,7 @@ function CopiesTab({ counts, onInc, onDec }) {
       </div>
 
       {dupes.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
           {dupes.map((s, i) => (
             <div key={s.id} className="anim-fadeup" style={{ animationDelay:`${i * 45}ms` }}>
               <StickerCard sticker={s} count={counts[s.id]} onInc={onInc} onDec={onDec}/>
@@ -892,7 +970,7 @@ function MiniSticker({ id }) {
       <span className="text-lg shrink-0">{s.team.flag}</span>
       <div className="min-w-0">
         <div className="text-[12px] font-semibold truncate">{s.rarity==='legend' ? '★ ' : ''}{s.label}</div>
-        <div className="font-mono text-[10px] text-dim">{s.team.code}·{String(s.num).padStart(2,'0')} — {s.team.name}</div>
+        <div className="font-mono text-[10px] text-dim">{s.codeLabel} — {s.team.name}</div>
       </div>
       {s.rarity !== 'common' && <span className={`ml-auto shrink-0 ${s.rarity==='legend'?'text-neon':'text-cyan26'}`}><Icon.spark width="12" height="12"/></span>}
     </div>
@@ -1056,7 +1134,7 @@ function App() {
         <div className="anim-ticker flex whitespace-nowrap py-1.5 font-mono text-[10px] tracking-[.25em] uppercase text-dim">
           {[0,1].map(k => (
             <span key={k} className="flex shrink-0">
-              {['STICKR·26','USA · MEX · CAN','48 seleções','288 figurinhas','104 jogos','troque agora','11.06.2026'].map((t, i) => (
+              {['STICKR·26','USA · MEX · CAN','48 seleções','994 figurinhas','104 jogos','troque agora','11.06.2026'].map((t, i) => (
                 <span key={i} className="mx-6 flex items-center gap-6">{t}<span className="text-cyan26">◆</span></span>
               ))}
             </span>
