@@ -46,6 +46,9 @@
 <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"
         integrity="sha384-x/ilTFv/u/eu6YSmkFDZl5V5Mm/pkxxcVv2cVJOrr1J0rvILhMvRBCy6yA75wYBj"
         crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"
+        integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil"
+        crossorigin="anonymous"></script>
 
 <style>
   :root { color-scheme: dark; }
@@ -263,64 +266,12 @@ const TEAMS = [
   { code:'CC',  name:'Coca-Cola',     flag:'🥤', c1:'#e61d2b', c2:'#7a0d16', group:'CC' },
 ];
 
-/* 20 figurinhas por seleção (numeração 1–20 como no álbum oficial):
-   Escudo (brilhante) · 18 jogadores · Craque (lendária) */
-const ROSTER = {
-  FWC:['Logo Copa 2026','Troféu FIFA','Bola Trionda','Maple','Zayu','Clutch','Estádio Azteca','SoFi Stadium','BMO Field','MetLife Stadium','História · 1930','História · 1958','História · 1966','História · 1970','História · 1986','História · 1994','História · 1998','História · 2002','História · 2010','História · 2022'],
-  CC:['Pelé','Maradona','Zidane','Ronaldo','Ronaldinho','Beckham','Cafu','Buffon','Iniesta','Drogba','Kaká','Pirlo','Forlán','Klose'],
-  USA:['Escudo','Turner','Dest','Richards','Ream','Robinson','McKenzie','Adams','Musah','McKennie','Reyna','De la Torre','Weah','Balogun','Ferreira','Aaronson','Sargent','Tillman','Scally','Pulisic'],
-  MEX:['Escudo','Malagón','J. Sánchez','Montes','Vásquez','Gallardo','Arteaga','E. Álvarez','Romo','L. Chávez','Pineda','Lira','Lozano','R. Jiménez','Vega','Antuna','Huerta','Quiñones','Zendejas','S. Giménez'],
-  CAN:['Escudo','Crépeau','Johnston','Miller','Cornelius','Laryea','Bombito','Eustáquio','Koné','Osorio','Buchanan','Shaffelburg','J. David','Larin','Cavallini','Ugbo','Millar','Oluwaseyi','Hoilett','A. Davies'],
-  PAN:['Escudo','Mosquera','Murillo','Andrade','Escobar','Davis','Godoy','Cárdenas','Bárcenas','Quintero','Yanis','Fajardo','Blackman','Waterman','Browne','Díaz','Walder','Harvey','Ayarza','Carrasquilla'],
-  CUW:['Escudo','Room','Martina','Van Eijma','Obispo','St. Jago','Margaritha','J. Bacuna','Gorré','Janga','Kastaneer','Locadia','Antonia','Hooi','Maria','Paal','Irausquin','Davelaar','Sambo','L. Bacuna'],
-  HAI:['Escudo','Placide','Arcus','Lafrance','Adé','Casimir','Geffrard','Jean Jacques','Saba','Damus','Pierrot','Etienne Jr.','Cantave','Borgella','Dor','Milien','Théodore','Bazile','Louicius','Nazon'],
-  BRA:['Escudo','Alisson','Danilo','Marquinhos','Gabriel M.','Militão','Wendell','Casemiro','Bruno G.','Paquetá','Gerson','André','Vini Jr.','Rodrygo','Raphinha','Endrick','Martinelli','M. Cunha','Estêvão','Neymar'],
-  ARG:['Escudo','Dibu Martínez','Molina','C. Romero','Otamendi','Lisandro M.','Tagliafico','De Paul','E. Fernández','Mac Allister','Paredes','Lo Celso','J. Álvarez','Lautaro','N. González','Garnacho','Dybala','Almada','Palacios','Messi'],
-  URU:['Escudo','Rochet','R. Araújo','J. Giménez','M. Olivera','Nández','S. Bueno','Ugarte','Bentancur','De Arrascaeta','De la Cruz','Varela','D. Núñez','Aguirre','B. Rodríguez','M. Araújo','Viña','Pellistri','Ocampo','Valverde'],
-  COL:['Escudo','C. Vargas','Muñoz','D. Sánchez','Lucumí','Mojica','Arias','Lerma','R. Ríos','Uribe','James R.','Quintero','Carrascal','J. Durán','Borré','Córdoba','Borja','Sinisterra','Castaño','Luis Díaz'],
-  ECU:['Escudo','Galíndez','Pacho','Hincapié','F. Torres','Preciado','Estupiñán','Gruezo','A. Franco','Sarmiento','K. Páez','Plata','E. Valencia','Estrada','Yeboah','Medina','Mena','Ramírez','Cifuentes','M. Caicedo'],
-  PAR:['Escudo','Coronel','G. Gómez','Alderete','Balbuena','Espínola','J. Alonso','Cubas','Villasanti','Bobadilla','O. Romero','Á. Romero','Enciso','Sanabria','Sosa','D. González','R. Sánchez','Ávalos','Galarza','Almirón'],
-  ENG:['Escudo','Pickford','Walker','Stones','Guéhi','Colwill','Alexander-Arnold','Rice','Bellingham','Mainoo','Foden','Palmer','Saka','Gordon','Watkins','Rashford','Eze','Konsa','Branthwaite','Kane'],
-  FRA:['Escudo','Maignan','Koundé','Saliba','Upamecano','T. Hernández','Pavard','Tchouaméni','Camavinga','Rabiot','Griezmann','Zaïre-Emery','Dembélé','Kolo Muani','Thuram','Coman','Barcola','Olise','Doué','Mbappé'],
-  GER:['Escudo','ter Stegen','Kimmich','Rüdiger','Tah','Schlotterbeck','Raum','Goretzka','Andrich','Wirtz','Pavlović','Mittelstädt','Havertz','Füllkrug','Sané','Gnabry','Adeyemi','Undav','Stiller','Musiala'],
-  ESP:['Escudo','Unai Simón','Carvajal','Le Normand','Laporte','Cucurella','Grimaldo','Rodri','Pedri','Fabián','Olmo','Zubimendi','N. Williams','Morata','Oyarzabal','Ferran','Merino','Baena','Cubarsí','Lamine Yamal'],
-  POR:['Escudo','D. Costa','Cancelo','R. Dias','António Silva','N. Mendes','Dalot','Vitinha','J. Neves','B. Fernandes','B. Silva','Palhinha','R. Leão','G. Ramos','Conceição','Trincão','P. Neto','Inácio','R. Neves','Cristiano'],
-  NED:['Escudo','Verbruggen','Dumfries','De Vrij','Aké','Van de Ven','Frimpong','F. de Jong','Reijnders','Schouten','Simons','Veerman','Gakpo','Depay','Weghorst','Malen','Lang','Brobbey','Timber','Van Dijk'],
-  BEL:['Escudo','Courtois','Castagne','Faes','Theate','Debast','De Cuyper','A. Onana','Tielemans','Vanaken','Trossard','Carrasco','Doku','Lukaku','Openda','Bakayoko','De Ketelaere','Lukebakio','Saelemaekers','De Bruyne'],
-  CRO:['Escudo','Livaković','Stanišić','Šutalo','Gvardiol','Perišić','Juranović','Brozović','Kovačić','Sučić','Pašalić','Majer','Kramarić','Budimir','Petković','Baturina','Moro','Erlić','Ivanušec','Modrić'],
-  NOR:['Escudo','Nyland','Ryerson','Ajer','Østigård','Heggem','Meling','Berge','Ødegaard','Thorsby','Bobb','Nusa','Sørloth','Strand Larsen','Elyounoussi','Aursnes','Hauge','Schjelderup','Donnum','Haaland'],
-  AUT:['Escudo','A. Schlager','Posch','Danso','Lienhart','Mwene','Wöber','X. Schlager','Seiwald','Laimer','Sabitzer','Baumgartner','Arnautović','Gregoritsch','Schmid','Wimmer','Prass','Grüll','Querfeld','Alaba'],
-  SUI:['Escudo','Sommer','Widmer','Akanji','Elvedi','Schär','R. Rodríguez','Freuler','Sow','Rieder','R. Vargas','Aebischer','Embolo','Ndoye','Amdouni','Okafor','Itten','Sierro','Zakaria','Xhaka'],
-  SCO:['Escudo','Gunn','Hickey','Hanley','McKenna','Tierney','Robertson','Gilmour','McGinn','L. Ferguson','Christie','McLean','C. Adams','Dykes','Shankland','Doak','J. Souttar','Ralston','Hendry','McTominay'],
-  CZE:['Escudo','Staněk','Coufal','L. Krejčí','Holeš','Douděra','Vlček','Souček','Barák','Sadílek','Provod','Šulc','Černý','Ševčík','Lingr','Hložek','Kuchta','Chorý','Vydra','Schick'],
-  BIH:['Escudo','Vasilj','Barišić','Bičakčić','Hadžikadunić','Kolašinac','Dedić','Cimirot','Krunić','Hadžiahmetović','Huseinbašić','Tahirović','Gigović','Memić','Hajradinović','Demirović','Prevljak','Bajraktarević','Katić','Džeko'],
-  SWE:['Escudo','Olsen','Krafth','Lindelöf','Hien','Starfelt','Augustinsson','Svanberg','Cajuste','Ayari','Karlström','Forsberg','Kulusevski','Elanga','Gyökeres','Nygren','Bergvall','Nanasi','Claesson','Isak'],
-  TUR:['Escudo','Çakır','Müldür','Demiral','Bardakcı','Kadıoğlu','Ayhan','Çalhanoğlu','Kökçü','Yüksek','Aktürkoğlu','Yazıcı','K. Yıldız','Ünder','Tosun','Akgün','Kılıçsoy','Özcan','Ünal','Arda Güler'],
-  JPN:['Escudo','Z. Suzuki','Sugawara','Tomiyasu','Itakura','Machida','H. Ito','Endo','Morita','Kamada','Mitoma','Doan','Ueda','Asano','Maeda','Minamino','Furuhashi','A. Tanaka','J. Ito','Kubo'],
-  KOR:['Escudo','Jo Hyeon-woo','Kim Min-jae','Kim Young-gwon','Lee Ki-je','Seol Young-woo','Kim Moon-hwan','Hwang In-beom','Lee Jae-sung','Lee Kang-in','Paik Seung-ho','Hong Hyun-seok','Hwang Hee-chan','Cho Gue-sung','Oh Hyeon-gyu','Jeong Woo-yeong','Eom Ji-sung','Bae Jun-ho','Yang Hyun-jun','Son'],
-  IRN:['Escudo','Beiranvand','Rezaeian','Moharrami','Khalilzadeh','Hosseini','Mohammadi','Cheshmi','Ezatolahi','Hajsafi','Gholizadeh','Jahanbakhsh','Ghoddos','Torabi','Azmoun','Ansarifard','Mohebi','Sayyadmanesh','Niazmand','Taremi'],
-  AUS:['Escudo','M. Ryan','Atkinson','H. Souttar','Rowles','Behich','Burgess',"O'Neill",'Metcalfe','Baccus','Goodwin','McGree','Duke','Boyle','Kuol','Yengi','Borrello','Velupillay','Tilio','Irvine'],
-  UZB:['Escudo','Yusupov','Ashurmatov','Eshmurodov','Khashimov','Alijonov','Masharipov','Urunov','Fayzullaev','Khamdamov','Iskanderov','Yuldoshev','Shomurodov','Sergeev','Turgunboev','Erkinov','Abdullaev','Norchaev','Hamrobekov','Khusanov'],
-  JOR:['Escudo','Abu Laila','Al-Arab','Nasib','Haddad','Abualnadi','Al-Ajalin','Al-Rashdan','Rateb','Al-Rawabdeh','Ayed','Al-Mardi','Al-Naimat','Olwan','Abu Hashish','Al-Dmeiri','Hantouli','Abu Zrayq','Al-Zebdieh','Al-Tamari'],
-  KSA:['Escudo','Al-Owais','Abdulhamid','Al-Amri','Al-Bulayhi','Al-Shahrani','Al-Tambakti','Kanno','Al-Malki','Al-Najei','Al-Khaibari','Al-Juwayr','Al-Buraikan','Al-Shehri','Asiri','Al-Ghannam','Radif','Al-Aboud','Al-Faraj','Al-Dawsari'],
-  QAT:['Escudo','Barsham','Ró-Ró','Khoukhi','Salman','H. Ahmed','Waad','Madibo','Hatem','Boudiaf','Al-Haydos','Fathi','Almoez Ali','Muntari','Alaaeldin','M. Gaber','Mazeed','Al-Ganehi','Al-Rawi','Akram Afif'],
-  IRQ:['Escudo','J. Hassan','Doski','Tahseen','Ali-Abbas','Hussein Ali','A. Hashim','Al-Ammari','Z. Iqbal','Bayesh','Amyn','B. Resan','Ali Jasim','Mohanad Ali','Al-Hamadi','Jabbar','Naseef','Karrar','Yaseen','Aymen Hussein'],
-  MAR:['Escudo','Bounou','Mazraoui','Aguerd','El Yamiq','Attiyat-Allah','Dari','Amrabat','Ounahi','Amallah','El Khannouss','Adli','Brahim Díaz','En-Nesyri','Ezzalzouli','Rahimi','Targhalline','Igamane','Saibari','Hakimi'],
-  SEN:['Escudo','É. Mendy','Koulibaly','Niakhaté','A. Diallo','Sabaly','Jakobs','I. Gueye','P. M. Sarr','L. Camara','P. Gueye','Diatta','I. Sarr','N. Jackson','B. Dia','H. Diallo','I. Ndiaye','Sima','Ciss','Mané'],
-  EGY:['Escudo','El-Shenawy','Hamdi','Hegazi','Abdelmonem','O. Kamal','Fatouh','H. Fathi','Elneny','E. Ashour','Trezeguet','Zizo','Marmoush','M. Mohamed','I. Adel','T. Mohamed','Attia','Faisal','Sobhi','Salah'],
-  ALG:['Escudo','Mandrea','Atal','Mandi','Bensebaini','Aït-Nouri','Tougai','Bennacer','Bentaleb','Aouar','Zorgane','Bendebka','Amoura','Gouiri','Bounedjah','Chaibi','Belaïli','Ounas','Boudaoui','Mahrez'],
-  TUN:['Escudo','Ben Saïd','Talbi','Meriah','Bronn','Abdi','Kechrida','Laidouni','Skhiri','Hannibal','Sassi','Romdhane','Khenissi','Jaziri','Mastouri','Achouri','Ltaief','Ben Slimane','Sliti','Msakni'],
-  CIV:['Escudo','Y. Fofana','Aurier','Ndicka','Konan','Singo','Diomandé','S. Fofana','Sangaré','Seri','Kossounou','Gradel','Pépé','Haller','Adingra','Krasso','Boga','Zaha','Cornet','Kessié'],
-  GHA:['Escudo','Ati-Zigi','Lamptey','Salisu','Djiku','Amartey','G. Mensah','Partey','Samed','K. Sulemana','J. Ayew','A. Ayew','Semenyo','I. Williams','F. Nuamah','J. Paintsil','Bukari','Fatawu','Ashimeru','Kudus'],
-  RSA:['Escudo','R. Williams','Mudau','Mvala','Kekana','Modiba','Mokoena','Sithole','Zwane','Morena','Appollis','Aubaas','L. Foster','Makgopa','Mayambela','Mokwana','Rayners','Mbule','Maswanganyi','Tau'],
-  CPV:['Escudo','Vozinha','R. Lopes','Logan Costa','Stopira','Diney','K. Pina','J. Monteiro','D. Duarte','K. Rocha','Bebé','G. Rodrigues','Djaniny','W. Semedo','J. Tavares','Heriberto','Gilson','Livramento','Lenini','Ryan Mendes'],
-  COD:['Escudo','Mpasi','Mbemba','Masuaku','Kabasele','Tuanzebe','Inonga','Pickel','Moutoussamy','Kayembe','Kakuta','Bongonda','Bakambu','Mayele','M. Elia','Bolasie','Muleka','Kalonji','Wan-Bissaka','Wissa'],
-  NZL:['Escudo','Crocombe','Boxall','Pijnaker','Tuiloma','Cacace','Payne','Stamenić','Garbett','McCowatt','C. Lewis','S. Singh','Bell','Just','Waine','Barbarouses','Greive','Old','T. Smith','Chris Wood'],
-};
-
-/* Ícones e legendas das seções especiais */
-const FWC_ICONS = ['🎫','🏆','⚽','🫎','🐆','🦅','🏟️','🏟️','🏟️','🏟️','📜','📜','📜','📜','📜','📜','📜','📜','📜','📜'];
-const FWC_SUBS  = ['Página Inicial','Troféu','Bola Oficial','Mascote · CAN','Mascote · MEX','Mascote · USA','Cidade do México','Los Angeles','Toronto','Nova York/NJ','Uruguai Campeão','Brasil Campeão','Inglaterra Campeã','Brasil Campeão','Argentina Campeã','Brasil Campeão','França Campeã','Brasil Campeão','Espanha Campeã','Argentina Campeã'];
+/* Sem nomes de jogadores — só a numeração oficial do álbum.
+   Seleções: 1–20 (1 = Escudo brilhante · 20 = Craque lendária)
+   FWC: 00–19 (especiais + história) · Coca-Cola: 01–14 (lendárias) */
+const FWC_LABELS = ['Logo Copa 2026','Troféu FIFA','Bola Trionda','Maple','Zayu','Clutch','Estádio Azteca','SoFi Stadium','BMO Field','MetLife Stadium','História · 1930','História · 1958','História · 1966','História · 1970','História · 1986','História · 1994','História · 1998','História · 2002','História · 2010','História · 2022'];
+const FWC_ICONS  = ['🎫','🏆','⚽','🫎','🐆','🦅','🏟️','🏟️','🏟️','🏟️','📜','📜','📜','📜','📜','📜','📜','📜','📜','📜'];
+const FWC_SUBS   = ['Página Inicial','Troféu','Bola Oficial','Mascote · CAN','Mascote · MEX','Mascote · USA','Cidade do México','Los Angeles','Toronto','Nova York/NJ','Uruguai Campeão','Brasil Campeão','Inglaterra Campeã','Brasil Campeão','Argentina Campeã','Brasil Campeão','França Campeã','Brasil Campeão','Espanha Campeã','Argentina Campeã'];
 
 const GROUP_DEFS = [
   { key:'FWC', title:'Especiais' },
@@ -328,29 +279,27 @@ const GROUP_DEFS = [
   { key:'CC', title:'Coca-Cola' },
 ];
 
-const STICKERS = TEAMS.flatMap(team =>
-  ROSTER[team.code].map((label, i) => {
-    const last = ROSTER[team.code].length - 1;
-    const isFWC = team.code === 'FWC';
-    const isCC = team.code === 'CC';
-    return {
-      id: `${team.code}-${i + 1}`,
-      num: i + 1,
-      label,
-      team,
-      special: isFWC || isCC,
-      /* numeração igual à do álbum: FWC 00–19 · seleções 1–20 · CC 01–14 */
-      codeLabel: isFWC ? `FWC·${String(i).padStart(2,'0')}` : `${team.code}·${String(i + 1).padStart(2,'0')}`,
-      rarity: isCC
-        ? 'legend'
-        : isFWC
-          ? (i === 1 ? 'legend' : i <= 5 ? 'shiny' : 'common')
-          : (i === 0 ? 'shiny' : i === last ? 'legend' : 'common'),
-      icon: isFWC ? FWC_ICONS[i] : isCC ? '⭐' : null,
-      sub: isFWC ? FWC_SUBS[i] : isCC ? 'Lenda Coca-Cola' : null,
-    };
-  })
-);
+const STICKERS = TEAMS.flatMap(team => {
+  const isFWC = team.code === 'FWC';
+  const isCC = team.code === 'CC';
+  const len = isCC ? 14 : 20;
+  return Array.from({ length: len }, (_, i) => ({
+    id: `${team.code}-${i + 1}`,
+    num: i + 1,
+    label: isFWC ? FWC_LABELS[i] : isCC ? 'Lenda' : i === 0 ? 'Escudo' : i === len - 1 ? 'Craque' : null,
+    team,
+    special: isFWC || isCC,
+    /* numeração igual à do álbum: FWC 00–19 · seleções 1–20 · CC 01–14 */
+    codeLabel: isFWC ? `FWC·${String(i).padStart(2,'0')}` : `${team.code}·${String(i + 1).padStart(2,'0')}`,
+    rarity: isCC
+      ? 'legend'
+      : isFWC
+        ? (i === 1 ? 'legend' : i <= 5 ? 'shiny' : 'common')
+        : (i === 0 ? 'shiny' : i === len - 1 ? 'legend' : 'common'),
+    icon: isFWC ? FWC_ICONS[i] : isCC ? '⭐' : null,
+    sub: isFWC ? FWC_SUBS[i] : isCC ? 'Lenda Coca-Cola' : null,
+  }));
+});
 const STICKER_MAP = Object.fromEntries(STICKERS.map(s => [s.id, s]));
 
 /* Coleção inicial (0 = não tem, 1 = tenho, >1 = repetidas) */
@@ -385,6 +334,45 @@ const FRIENDS = [
     needs:['ARG-13','BRA-9','GER-2','USA-12','ARG-10','CAN-13'],
   },
 ];
+
+/* ================================================================
+   BACKEND — Supabase (contas, grupos de troca, convites)
+================================================================ */
+const SB_URL = 'https://qyhvwjcrbzsczixencbm.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aHZ3amNyYnpzY3ppeGVuY2JtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0OTI3NjQsImV4cCI6MjA5NDA2ODc2NH0.dbwORGjh4-jpna0Hj-rmcTydm7X1KOR90ICmDnvwaNI';
+const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+
+const ERR_MSG = {
+  nome_em_uso: 'Esse nome já está em uso — escolha outro.',
+  login_invalido: 'Nome ou PIN incorretos.',
+  codigo_invalido: 'Código de convite inválido.',
+  pin_invalido: 'O PIN deve ter de 4 a 8 números.',
+  nao_e_membro: 'Você não faz parte desse grupo.',
+};
+async function rpc(fn, args) {
+  if (!sb) throw new Error('Sem conexão com o servidor.');
+  const { data, error } = await sb.rpc(fn, args);
+  if (error) {
+    const key = Object.keys(ERR_MSG).find(k => (error.message || '').includes(k));
+    throw new Error(key ? ERR_MSG[key] : 'Erro de conexão — tente de novo.');
+  }
+  return data;
+}
+
+/* match real entre membros do grupo (baseado nas coleções de verdade) */
+function computeRealMatch(member, myCounts) {
+  const theirs = member.counts || {};
+  const youReceive = Object.keys(theirs).filter(id => theirs[id] >= 2 && (myCounts[id] || 0) === 0);
+  const youSend = Object.keys(myCounts).filter(id => (myCounts[id] || 0) >= 2 && !(theirs[id] > 0));
+  const pairs = Math.min(youReceive.length, youSend.length);
+  const theirDupes = Object.values(theirs).filter(c => c >= 2).length;
+  const myDupes = Object.values(myCounts).filter(c => c >= 2).length;
+  const potential = theirDupes + myDupes;
+  const pct = potential === 0 ? 0 : Math.min(100, Math.round(((youReceive.length + youSend.length) / potential) * 100));
+  return { youReceive, youSend, pairs, pct };
+}
+
+const MEMBER_COLORS = ['#00e5ff','#00ff87','#b96bff','#ffd166','#ff7a9c','#7ab8ff','#9cff6b','#ff9a5c'];
 
 /* ================================================================
    HOOKS
@@ -465,6 +453,23 @@ const Icon = {
   player: (p) => (
     <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
       <circle cx="12" cy="7.5" r="3.6"/><path d="M4.5 21c.6-4.4 3.6-7 7.5-7s6.9 2.6 7.5 7z"/>
+    </svg>
+  ),
+  users: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c.5-3.3 2.7-5 5.5-5s5 1.7 5.5 5"/>
+      <path d="M16 5.6a3 3 0 0 1 0 5.3M17.8 14.9c1.7.7 2.6 2.2 2.9 4.1"/>
+    </svg>
+  ),
+  copy: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>
+    </svg>
+  ),
+  share: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="6" r="2.6"/><circle cx="18" cy="18" r="2.6"/>
+      <path d="M8.3 10.8l7.4-3.6M8.3 13.2l7.4 3.6"/>
     </svg>
   ),
 };
@@ -622,7 +627,7 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
         className={`sticker-tilt anim-pop relative w-full aspect-[3/4] rounded-xl text-left no-select
           ${owned ? `${frameClass} p-[5px] shine overflow-hidden` : 'border-2 border-dashed border-white/[.12] bg-white/[.015] overflow-hidden'}`}
         style={{ transformOrigin:'center' }}
-        aria-label={`${sticker.label} — ${team.name}`}
+        aria-label={`${sticker.codeLabel} — ${team.name}`}
       >
         {owned ? (
           /* ============ FIGURINHA COLADA (estilo Panini) ============ */
@@ -640,9 +645,12 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
               {isLegend && <span className="text-yellow-200 drop-shadow"><Icon.spark width="15" height="15"/></span>}
             </div>
 
-            {/* centro: bandeira (ou ícone especial) */}
+            {/* centro: bandeira + número grande (sem nomes de jogadores) */}
             <div className="relative flex-1 flex flex-col items-center justify-center">
-              <span className="text-[42px] sm:text-[38px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{sticker.icon || team.flag}</span>
+              <span className="text-[32px] sm:text-[30px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{sticker.icon || team.flag}</span>
+              <span className="font-display font-black text-[26px] sm:text-[22px] leading-none text-white mt-1.5 drop-shadow-[0_2px_8px_rgba(0,0,0,.7)]">
+                {sticker.team.code === 'FWC' ? String(sticker.num - 1).padStart(2,'0') : String(sticker.num).padStart(2,'0')}
+              </span>
               {isLegend && (
                 <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-yellow-100/90 bg-black/35 px-2 py-0.5 rounded-full">{sticker.special ? 'lendária' : 'craque'}</span>
               )}
@@ -656,7 +664,7 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
               <div className="rounded-md bg-[#0d0f14]/90 backdrop-blur-sm px-2 py-1.5 text-center border border-white/[.07]">
                 <div className={`font-display leading-tight truncate ${isLegend ? 'font-extrabold text-[13px] sm:text-[12px] bg-clip-text text-transparent' : 'font-semibold text-[12px] sm:text-[11px] text-white'}`}
                      style={isLegend ? { backgroundImage:'linear-gradient(90deg,#ffd166,#00ff87,#00e5ff)' } : {}}>
-                  {isLegend ? `★ ${sticker.label}` : sticker.label}
+                  {isLegend ? `★ ${sticker.label || 'Craque'}` : (sticker.label || `Nº ${String(sticker.num).padStart(2,'0')}`)}
                 </div>
                 <div className="font-mono text-[8px] uppercase tracking-[.22em] text-dim mt-0.5 truncate">{sticker.sub || team.name}</div>
               </div>
@@ -668,7 +676,7 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
             <span className="absolute top-2 left-2.5 font-mono text-[10px] text-white/25">{sticker.codeLabel}</span>
             <span className="absolute font-display font-black text-[64px] text-white/[.04] no-select">{sticker.num}</span>
             <span className="text-white/[.13]">{sticker.special ? <Icon.spark width="40" height="40"/> : <Icon.player width="44" height="44"/>}</span>
-            <span className="mt-2 font-semibold text-[11px] text-white/30 text-center px-2 leading-tight">{sticker.label}</span>
+            {sticker.label && <span className="mt-2 font-semibold text-[11px] text-white/30 text-center px-2 leading-tight">{sticker.label}</span>}
             <span className="mt-2 font-mono text-[8px] uppercase tracking-[.3em] text-white/20 border border-white/10 rounded-full px-2.5 py-1">faltando</span>
           </div>
         )}
@@ -740,8 +748,7 @@ function AlbumTab({ counts, onInc, onDec }) {
   const query = norm(q.trim());
 
   const matchTeam = (t) =>
-    !query || norm(t.name).includes(query) || t.code.toLowerCase().includes(query) ||
-    ROSTER[t.code].some(n => norm(n).includes(query));
+    !query || norm(t.name).includes(query) || t.code.toLowerCase().includes(query);
 
   const toggle = (code) => setOpen(o => ({ ...o, [code]: !o[code] }));
 
@@ -764,7 +771,7 @@ function AlbumTab({ counts, onInc, onDec }) {
     const teams = TEAMS
       .filter(t => (group === 'Todas' || t.group === group) && matchTeam(t))
       .slice()
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+      .sort((a, b) => a.code.localeCompare(b.code)); /* A–Z pela sigla FIFA (nome em inglês) */
     total = teams.length;
     body = teams.map(renderTeam);
   } else {
@@ -801,7 +808,7 @@ function AlbumTab({ counts, onInc, onDec }) {
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Buscar seleção ou jogador…"
+            placeholder="Buscar seleção ou sigla…"
             className="bg-transparent outline-none w-full text-[14px] placeholder:text-dim/60"
           />
           {q && (
@@ -932,22 +939,70 @@ function MatchCard({ friend, match, onOpen, delay }) {
   );
 }
 
-function MatchesTab({ counts, onOpenFriend }) {
-  const matches = useMemo(() =>
+function MatchesTab({ counts, onOpen, session, groupData, onGoGroup, onRefresh, loading }) {
+  const logged = !!session;
+  const members = groupData?.members || [];
+
+  const realMatches = useMemo(() =>
+    members
+      .map((m, i) => ({
+        kind: 'real',
+        member: m,
+        person: { name: m.name, emoji: m.emoji, color: MEMBER_COLORS[i % MEMBER_COLORS.length] },
+        match: computeRealMatch(m, counts),
+      }))
+      .sort((a, b) => b.match.pct - a.match.pct),
+  [members, counts]);
+
+  const mockMatches = useMemo(() =>
     FRIENDS
-      .map(f => ({ friend: f, match: computeMatch(f, counts) }))
+      .map(f => ({ kind: 'mock', friend: f, person: f, match: computeMatch(f, counts) }))
       .sort((a, b) => b.match.pct - a.match.pct),
   [counts]);
 
+  const list = logged ? realMatches : mockMatches;
+
   return (
     <div className="px-4 pb-10 pt-6 max-w-2xl mx-auto">
-      <div className="anim-fadeup mb-6">
-        <h2 className="font-display font-extrabold text-2xl">Matches <span className="text-cyan26">ao vivo</span></h2>
-        <p className="text-dim text-[13px] mt-1">Calculado em tempo real com base no seu álbum e nas suas repetidas.</p>
+      <div className="anim-fadeup mb-6 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="font-display font-extrabold text-2xl">Matches <span className="text-cyan26">ao vivo</span></h2>
+          <p className="text-dim text-[13px] mt-1">
+            {logged
+              ? <>Grupo <b className="text-white/80">{groupData?.group?.name || '…'}</b> — coleções reais dos seus amigos.</>
+              : 'Calculado em tempo real com base no seu álbum e nas suas repetidas.'}
+          </p>
+        </div>
+        {logged && (
+          <button onClick={onRefresh} disabled={loading}
+                  className="glass rounded-xl px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-cyan26 hover:border-cyan26/40 active:scale-95 transition-all shrink-0">
+            {loading ? '…' : '↻ atualizar'}
+          </button>
+        )}
       </div>
+
+      {!logged && (
+        <button onClick={onGoGroup}
+                className="anim-fadeup w-full mb-4 rounded-2xl px-4 py-3 text-left border border-cyan26/30 bg-cyan26/[.06] hover:bg-cyan26/10 transition-all active:scale-[.99]">
+          <span className="text-[12px] text-cyan26 font-semibold">⚡ Estes são amigos de exemplo.</span>
+          <span className="text-[12px] text-dim"> Crie sua conta na aba <b className="text-white/80">Grupo</b> e convide seus amigos para trocar de verdade!</span>
+        </button>
+      )}
+
+      {logged && members.length === 0 && (
+        <div className="anim-fadeup glass rounded-2xl py-12 px-6 flex flex-col items-center gap-3 text-center">
+          <Icon.users width="34" height="34" className="opacity-40 text-dim"/>
+          <p className="text-sm text-dim">Seu grupo ainda está vazio.<br/>Convide amigos na aba <b className="text-white/80">Grupo</b> para ver matches reais!</p>
+          <button onClick={onGoGroup} className="mt-1 rounded-xl px-4 py-2.5 font-display font-semibold text-[12px] text-black"
+                  style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)' }}>
+            CONVIDAR AMIGOS
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
-        {matches.map(({ friend, match }, i) => (
-          <MatchCard key={friend.id} friend={friend} match={match} onOpen={onOpenFriend} delay={i * 90}/>
+        {list.map((item, i) => (
+          <MatchCard key={item.person.name} friend={item.person} match={item.match} onOpen={() => onOpen(item)} delay={i * 90}/>
         ))}
       </div>
 
@@ -969,7 +1024,7 @@ function MiniSticker({ id }) {
     <div className="flex items-center gap-2.5 rounded-xl px-3 py-2 bg-white/[.04] border border-white/[.07]">
       <span className="text-lg shrink-0">{s.team.flag}</span>
       <div className="min-w-0">
-        <div className="text-[12px] font-semibold truncate">{s.rarity==='legend' ? '★ ' : ''}{s.label}</div>
+        <div className="text-[12px] font-semibold truncate">{s.rarity==='legend' ? '★ ' : ''}{s.label || `Figurinha ${String(s.num).padStart(2,'0')}`}</div>
         <div className="font-mono text-[10px] text-dim">{s.codeLabel} — {s.team.name}</div>
       </div>
       {s.rarity !== 'common' && <span className={`ml-auto shrink-0 ${s.rarity==='legend'?'text-neon':'text-cyan26'}`}><Icon.spark width="12" height="12"/></span>}
@@ -977,8 +1032,7 @@ function MiniSticker({ id }) {
   );
 }
 
-function TradeModal({ friend, counts, onClose }) {
-  const match = useMemo(() => computeMatch(friend, counts), [friend, counts]);
+function TradeModal({ person, match, onClose }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -994,12 +1048,12 @@ function TradeModal({ friend, counts, onClose }) {
         {/* header */}
         <div className="flex items-center gap-3.5 mb-5">
           <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-2xl"
-               style={{ background:`linear-gradient(140deg, ${friend.color}33, ${friend.color}0d)`, border:`1px solid ${friend.color}66` }}>
-            {friend.emoji}
+               style={{ background:`linear-gradient(140deg, ${person.color}33, ${person.color}0d)`, border:`1px solid ${person.color}66` }}>
+            {person.emoji}
           </div>
           <div className="flex-1">
-            <div className="font-display font-extrabold text-lg leading-tight">Match com {friend.name}</div>
-            <div className="font-mono text-[12px]" style={{ color: friend.color }}>{match.pct}% de compatibilidade · {match.pairs} troca{match.pairs===1?'':'s'} sugerida{match.pairs===1?'':'s'}</div>
+            <div className="font-display font-extrabold text-lg leading-tight">Match com {person.name}</div>
+            <div className="font-mono text-[12px]" style={{ color: person.color }}>{match.pct}% de compatibilidade · {match.pairs} troca{match.pairs===1?'':'s'} sugerida{match.pairs===1?'':'s'}</div>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-full glass flex items-center justify-center text-white/60 hover:text-white active:scale-90 transition-all">
             <Icon.close width="15" height="15"/>
@@ -1016,7 +1070,7 @@ function TradeModal({ friend, counts, onClose }) {
           {match.youReceive.length > 0 ? (
             <div className="flex flex-col gap-1.5">{match.youReceive.map(id => <MiniSticker key={id} id={id}/>)}</div>
           ) : (
-            <p className="text-[12px] text-dim italic px-1">{friend.name} não tem nada que falte no seu álbum agora.</p>
+            <p className="text-[12px] text-dim italic px-1">{person.name} não tem nada que falte no seu álbum agora.</p>
           )}
         </div>
 
@@ -1030,7 +1084,7 @@ function TradeModal({ friend, counts, onClose }) {
           {match.youSend.length > 0 ? (
             <div className="flex flex-col gap-1.5">{match.youSend.map(id => <MiniSticker key={id} id={id}/>)}</div>
           ) : (
-            <p className="text-[12px] text-dim italic px-1">Você não tem repetidas que {friend.name} precise.</p>
+            <p className="text-[12px] text-dim italic px-1">Você não tem repetidas que {person.name} precise.</p>
           )}
         </div>
 
@@ -1051,27 +1105,278 @@ function TradeModal({ friend, counts, onClose }) {
 }
 
 /* ================================================================
+   ABA · GRUPO — conta, convites e membros
+================================================================ */
+const EMOJIS = ['⚽','🧢','⚡','🌟','🔥','🦁','👑','🎯'];
+
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="font-mono text-[10px] uppercase tracking-[.25em] text-dim">{label}</span>
+      <div className="mt-1.5">{children}</div>
+    </label>
+  );
+}
+
+function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGroupId, setActiveGroupId, groupData, onRefresh }) {
+  const [mode, setMode] = useState('signup'); // 'signup' | 'login'
+  const [name, setName] = useState('');
+  const [pin, setPin] = useState('');
+  const [emoji, setEmoji] = useState('⚽');
+  const [joinCode, setJoinCode] = useState('');
+  const [newGroup, setNewGroup] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);   // { ok: bool, text }
+  const [copied, setCopied] = useState(null);
+
+  const flash = (ok, text) => { setMsg({ ok, text }); setTimeout(() => setMsg(null), 4000); };
+
+  const submit = async () => {
+    if (!name.trim() || !pin) return flash(false, 'Preencha nome e PIN.');
+    setBusy(true);
+    try {
+      let payload = mode === 'signup'
+        ? await rpc('stickr_signup', { p_name: name, p_pin: pin, p_emoji: emoji })
+        : await rpc('stickr_login', { p_name: name, p_pin: pin });
+      if (invite) {
+        try {
+          payload = await rpc('stickr_join_group', { p_user: payload.user_id, p_token: payload.token, p_code: invite });
+          onClearInvite();
+        } catch (e) { flash(false, e.message); }
+      }
+      onAuth(payload);
+      flash(true, mode === 'signup' ? 'Conta criada! Seu grupo já tem um código de convite.' : 'Bem-vindo de volta!');
+    } catch (e) { flash(false, e.message); }
+    setBusy(false);
+  };
+
+  const join = async () => {
+    if (!joinCode.trim()) return;
+    setBusy(true);
+    try {
+      const payload = await rpc('stickr_join_group', { p_user: session.user_id, p_token: session.token, p_code: joinCode });
+      onAuth(payload);
+      setJoinCode('');
+      flash(true, 'Você entrou no grupo!');
+    } catch (e) { flash(false, e.message); }
+    setBusy(false);
+  };
+
+  const createGroup = async () => {
+    if (!newGroup.trim()) return;
+    setBusy(true);
+    try {
+      const payload = await rpc('stickr_create_group', { p_user: session.user_id, p_token: session.token, p_name: newGroup });
+      onAuth(payload);
+      setNewGroup('');
+      flash(true, 'Grupo criado!');
+    } catch (e) { flash(false, e.message); }
+    setBusy(false);
+  };
+
+  const inviteLink = (code) => `${location.origin}${location.pathname}?convite=${code}`;
+  const copyLink = async (code) => {
+    try {
+      await navigator.clipboard.writeText(inviteLink(code));
+      setCopied(code); setTimeout(() => setCopied(null), 2000);
+    } catch { flash(false, 'Não consegui copiar — código: ' + code); }
+  };
+  const shareLink = (g) => {
+    const url = inviteLink(g.code);
+    if (navigator.share) {
+      navigator.share({ title: 'STICKR·26', text: `Entre no meu grupo de troca de figurinhas da Copa 2026! Código: ${g.code}`, url }).catch(() => {});
+    } else copyLink(g.code);
+  };
+
+  const inputCls = 'w-full glass rounded-xl px-4 py-3 bg-transparent outline-none text-[14px] placeholder:text-dim/50 focus:border-cyan26/50 transition-colors';
+
+  /* -------- deslogado: criar conta / entrar -------- */
+  if (!session) {
+    return (
+      <div className="px-4 pb-10 pt-6 max-w-md mx-auto">
+        <div className="anim-fadeup mb-6">
+          <h2 className="font-display font-extrabold text-2xl">Seu <span className="text-cyan26">Grupo</span> de Troca</h2>
+          <p className="text-dim text-[13px] mt-1">Crie sua conta, convide amigos e troquem figurinhas de verdade.</p>
+        </div>
+
+        {invite && (
+          <div className="anim-fadeup mb-4 rounded-2xl px-4 py-3 border border-neon/40 bg-neon/[.07]">
+            <span className="text-[13px]">🎟️ <b className="text-neon">Você foi convidado!</b> Crie sua conta (ou entre) para se juntar ao grupo <b className="font-mono">{invite}</b>.</span>
+          </div>
+        )}
+
+        <div className="anim-fadeup glass rounded-2xl p-1 flex mb-4" style={{ animationDelay:'80ms' }}>
+          {[['signup','Criar conta'],['login','Já tenho conta']].map(([key, label]) => (
+            <button key={key} onClick={() => setMode(key)}
+                    className={`flex-1 font-display font-semibold text-[12px] py-2.5 rounded-xl transition-all duration-300
+                      ${mode === key ? 'bg-cyan26/15 text-cyan26 border border-cyan26/40' : 'text-dim border border-transparent'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="anim-fadeup glass rounded-2xl p-5 flex flex-col gap-4" style={{ animationDelay:'140ms' }}>
+          <Field label="Seu nome ou apelido">
+            <input className={inputCls} value={name} onChange={e => setName(e.target.value)} maxLength={20} placeholder="Ex.: Cunha"/>
+          </Field>
+          <Field label="PIN (4 a 8 números — sua senha)">
+            <input className={inputCls} value={pin} onChange={e => setPin(e.target.value.replace(/\D/g,'').slice(0,8))}
+                   type="password" inputMode="numeric" placeholder="••••"/>
+          </Field>
+          {mode === 'signup' && (
+            <Field label="Seu emoji">
+              <div className="flex gap-1.5 flex-wrap">
+                {EMOJIS.map(e => (
+                  <button key={e} onClick={() => setEmoji(e)}
+                          className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border transition-all active:scale-90
+                            ${emoji === e ? 'border-cyan26/60 bg-cyan26/10' : 'border-white/10 hover:border-white/25'}`}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
+          <button onClick={submit} disabled={busy}
+                  className="w-full rounded-2xl py-3.5 font-display font-semibold text-[13px] tracking-wide text-black active:scale-[.98] transition-all disabled:opacity-50"
+                  style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)', boxShadow:'0 8px 28px -8px rgba(0,255,135,.55)' }}>
+            {busy ? 'AGUARDE…' : mode === 'signup' ? 'CRIAR CONTA E MEU GRUPO' : 'ENTRAR'}
+          </button>
+          {msg && <p className={`text-[12px] text-center ${msg.ok ? 'text-neon' : 'text-red-400'}`}>{msg.text}</p>}
+        </div>
+
+        <p className="anim-fadeup text-center text-[11px] text-dim mt-4" style={{ animationDelay:'200ms' }}>
+          Ao criar a conta, um grupo seu já nasce com código de convite para chamar os amigos.
+        </p>
+      </div>
+    );
+  }
+
+  /* -------- logado: grupos, convites, membros -------- */
+  const groups = session.groups || [];
+  const active = groups.find(g => g.id === activeGroupId) || groups[0];
+
+  return (
+    <div className="px-4 pb-10 pt-6 max-w-md mx-auto">
+      {/* perfil */}
+      <div className="anim-fadeup glass rounded-2xl p-4 flex items-center gap-3.5 mb-5">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border border-cyan26/40 bg-cyan26/10">{session.emoji}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-display font-extrabold text-[16px] truncate">{session.name}</div>
+          <div className="font-mono text-[11px] text-dim">{groups.length} grupo{groups.length===1?'':'s'} de troca</div>
+        </div>
+        <button onClick={onLogout} className="font-mono text-[11px] uppercase tracking-wider text-dim hover:text-red-400 transition-colors">sair</button>
+      </div>
+
+      {msg && <p className={`anim-fadeup text-[12px] text-center mb-3 ${msg.ok ? 'text-neon' : 'text-red-400'}`}>{msg.text}</p>}
+
+      {/* grupos */}
+      <div className="flex flex-col gap-3 mb-5">
+        {groups.map((g, gi) => {
+          const isActive = active && g.id === active.id;
+          return (
+            <div key={g.id} className={`anim-fadeup glass rounded-2xl p-4 transition-all ${isActive ? 'border-cyan26/40' : ''}`} style={{ animationDelay:`${gi*70}ms` }}>
+              <button onClick={() => setActiveGroupId(g.id)} className="w-full flex items-center gap-3 text-left">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isActive ? 'bg-neon' : 'bg-white/15'}`} style={isActive ? { boxShadow:'0 0 8px #00ff87' } : {}}/>
+                <span className="font-display font-semibold text-[14px] flex-1 truncate">{g.name}</span>
+                <span className="font-mono text-[11px] text-dim shrink-0">{g.members} membro{g.members===1?'':'s'}</span>
+              </button>
+              {isActive && (
+                <div className="mt-3 pt-3 border-t border-white/[.07]">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] uppercase tracking-[.25em] text-dim">Convite</span>
+                    <span className="font-mono font-bold text-[16px] text-cyan26 tracking-[.2em]">{g.code}</span>
+                    <div className="ml-auto flex gap-1.5">
+                      <button onClick={() => copyLink(g.code)}
+                              className="glass rounded-lg px-2.5 py-1.5 text-[11px] font-mono flex items-center gap-1.5 text-white/80 hover:border-cyan26/40 active:scale-95 transition-all">
+                        <Icon.copy width="12" height="12"/>{copied === g.code ? 'copiado!' : 'link'}
+                      </button>
+                      <button onClick={() => shareLink(g)}
+                              className="rounded-lg px-2.5 py-1.5 text-[11px] font-mono flex items-center gap-1.5 text-black active:scale-95 transition-all"
+                              style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)' }}>
+                        <Icon.share width="12" height="12"/>convidar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* membros do grupo ativo */}
+                  <div className="mt-3 flex flex-col gap-2">
+                    {(groupData?.group?.id === g.id ? groupData.members : []).map((m, mi) => {
+                      const owned = Object.values(m.counts || {}).filter(c => c > 0).length;
+                      const mpct = Math.round((owned / STICKERS.length) * 100);
+                      return (
+                        <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-3 py-2 bg-white/[.04] border border-white/[.06]">
+                          <span className="text-lg">{m.emoji}</span>
+                          <span className="text-[13px] font-semibold flex-1 truncate">{m.name}</span>
+                          <span className="font-mono text-[11px]" style={{ color: MEMBER_COLORS[mi % MEMBER_COLORS.length] }}>{mpct}% do álbum</span>
+                        </div>
+                      );
+                    })}
+                    {groupData?.group?.id === g.id && groupData.members.length === 0 && (
+                      <p className="text-[12px] text-dim italic">Só você por aqui — mande o link de convite! 🎟️</p>
+                    )}
+                    <button onClick={onRefresh} className="font-mono text-[10px] uppercase tracking-wider text-dim hover:text-cyan26 self-start transition-colors">↻ atualizar membros</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* entrar em grupo por código */}
+      <div className="anim-fadeup glass rounded-2xl p-4 mb-3" style={{ animationDelay:'200ms' }}>
+        <Field label="Entrar num grupo com código">
+          <div className="flex gap-2">
+            <input className={inputCls + ' uppercase'} value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6}/>
+            <button onClick={join} disabled={busy || joinCode.length < 6}
+                    className="shrink-0 rounded-xl px-4 font-display font-semibold text-[12px] text-black disabled:opacity-40 active:scale-95 transition-all"
+                    style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)' }}>
+              ENTRAR
+            </button>
+          </div>
+        </Field>
+      </div>
+
+      {/* criar novo grupo */}
+      <div className="anim-fadeup glass rounded-2xl p-4" style={{ animationDelay:'260ms' }}>
+        <Field label="Criar outro grupo">
+          <div className="flex gap-2">
+            <input className={inputCls} value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="Ex.: Galera da escola" maxLength={40}/>
+            <button onClick={createGroup} disabled={busy || newGroup.trim().length < 2}
+                    className="shrink-0 glass rounded-xl px-4 font-display font-semibold text-[12px] text-cyan26 hover:border-cyan26/40 disabled:opacity-40 active:scale-95 transition-all">
+              CRIAR
+            </button>
+          </div>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
    NAVEGAÇÃO INFERIOR
 ================================================================ */
 const TABS = [
   { id:'album',   label:'Álbum',     icon: Icon.album },
   { id:'copies',  label:'Repetidas', icon: Icon.copies },
   { id:'matches', label:'Matches',   icon: Icon.swap },
+  { id:'group',   label:'Grupo',     icon: Icon.users },
 ];
 
-function BottomNav({ tab, setTab, dupeTotal, matchAlert }) {
+function BottomNav({ tab, setTab, dupeTotal, matchAlert, groupAlert }) {
   const idx = TABS.findIndex(t => t.id === tab);
+  const n = TABS.length;
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto px-4 pb-3">
         <div className="glass-deep rounded-3xl p-1.5 relative">
           {/* pílula ativa deslizante */}
           <div className="absolute top-1.5 bottom-1.5 rounded-2xl transition-all duration-300"
-               style={{ left:`calc(${idx} * (100% - 12px) / 3 + 6px)`, width:'calc((100% - 12px) / 3)',
+               style={{ left:`calc(${idx} * (100% - 12px) / ${n} + 6px)`, width:`calc((100% - 12px) / ${n})`,
                         background:'linear-gradient(140deg, rgba(0,229,255,.16), rgba(0,255,135,.08))',
                         border:'1px solid rgba(0,229,255,.3)', boxShadow:'0 0 20px -4px rgba(0,229,255,.3)',
                         transitionTimingFunction:'cubic-bezier(.3,1.4,.4,1)' }}/>
-          <div className="relative grid grid-cols-3">
+          <div className="relative grid grid-cols-4">
             {TABS.map(t => {
               const active = tab === t.id;
               const I = t.icon;
@@ -1084,6 +1389,9 @@ function BottomNav({ tab, setTab, dupeTotal, matchAlert }) {
                       <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] px-1 rounded-full bg-neon text-black font-mono font-bold text-[9px] flex items-center justify-center">{dupeTotal}</span>
                     )}
                     {t.id === 'matches' && matchAlert && (
+                      <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-neon animate-pulse" style={{ boxShadow:'0 0 6px #00ff87' }}/>
+                    )}
+                    {t.id === 'group' && groupAlert && (
                       <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-neon animate-pulse" style={{ boxShadow:'0 0 6px #00ff87' }}/>
                     )}
                   </span>
@@ -1105,8 +1413,87 @@ function App() {
   const [counts, setCounts] = usePersistedCounts();
   const [tab, setTabRaw] = useState('album');
   const [dir, setDir] = useState(1);
-  const [openFriend, setOpenFriend] = useState(null);
+  const [openMatch, setOpenMatch] = useState(null); // { kind, person, member?|friend? }
   const prevIdx = useRef(0);
+
+  /* ---- sessão (conta) ---- */
+  const [session, setSession] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('stickr26-session')); } catch { return null; }
+  });
+  const [activeGroupId, setActiveGroupId] = useState(() => localStorage.getItem('stickr26-group') || null);
+  const [groupData, setGroupData] = useState(null);
+  const [loadingGroup, setLoadingGroup] = useState(false);
+  const [invite, setInvite] = useState(() => {
+    const c = new URLSearchParams(location.search).get('convite');
+    return c ? c.toUpperCase().slice(0, 6) : null;
+  });
+  const clearInvite = () => {
+    setInvite(null);
+    history.replaceState(null, '', location.pathname);
+  };
+
+  useEffect(() => {
+    try {
+      if (session) localStorage.setItem('stickr26-session', JSON.stringify(session));
+      else localStorage.removeItem('stickr26-session');
+    } catch {}
+  }, [session]);
+  useEffect(() => {
+    try { activeGroupId ? localStorage.setItem('stickr26-group', activeGroupId) : localStorage.removeItem('stickr26-group'); } catch {}
+  }, [activeGroupId]);
+
+  /* login/cadastro: puxa coleção do servidor (ou sobe a local na 1ª vez) */
+  const handleAuth = useCallback(async (payload) => {
+    setSession(payload);
+    if (!payload.groups?.some(g => g.id === activeGroupId)) {
+      setActiveGroupId(payload.groups?.[0]?.id || null);
+    }
+    try {
+      const server = await rpc('stickr_get_collection', { p_user: payload.user_id, p_token: payload.token });
+      const serverHas = server && Object.keys(server).length > 0;
+      if (serverHas) setCounts(server);
+      else await rpc('stickr_save_collection', { p_user: payload.user_id, p_token: payload.token, p_counts: counts });
+    } catch {}
+  }, [counts, activeGroupId, setCounts]);
+
+  const handleLogout = () => { setSession(null); setGroupData(null); };
+
+  /* sincroniza a coleção no servidor (debounce) */
+  const syncTimer = useRef(null);
+  useEffect(() => {
+    if (!session) return;
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      rpc('stickr_save_collection', { p_user: session.user_id, p_token: session.token, p_counts: counts }).catch(() => {});
+    }, 1200);
+    return () => clearTimeout(syncTimer.current);
+  }, [counts, session]);
+
+  /* dados do grupo ativo (membros + coleções) */
+  const refreshGroup = useCallback(async () => {
+    if (!session) return;
+    const gid = activeGroupId || session.groups?.[0]?.id;
+    if (!gid) return;
+    setLoadingGroup(true);
+    try {
+      const data = await rpc('stickr_group_data', { p_user: session.user_id, p_token: session.token, p_group: gid });
+      setGroupData(data);
+    } catch {}
+    setLoadingGroup(false);
+  }, [session, activeGroupId]);
+
+  useEffect(() => {
+    if (session && (tab === 'matches' || tab === 'group')) refreshGroup();
+  }, [tab, session, activeGroupId, refreshGroup]);
+
+  /* convite na URL com sessão ativa → entra direto */
+  useEffect(() => {
+    if (invite && session) {
+      rpc('stickr_join_group', { p_user: session.user_id, p_token: session.token, p_code: invite })
+        .then(payload => { setSession(payload); clearInvite(); setTabRaw('group'); })
+        .catch(() => clearInvite());
+    }
+  }, [invite, session]);
 
   const setTab = (next) => {
     const ni = TABS.findIndex(t => t.id === next);
@@ -1125,7 +1512,20 @@ function App() {
   }), [setCounts]);
 
   const dupeTotal = useMemo(() => STICKERS.reduce((a, s) => a + Math.max(0, (counts[s.id] || 0) - 1), 0), [counts]);
-  const matchAlert = useMemo(() => FRIENDS.some(f => computeMatch(f, counts).pairs > 0), [counts]);
+  const matchAlert = useMemo(() => {
+    if (session && groupData?.members?.length) return groupData.members.some(m => computeRealMatch(m, counts).pairs > 0);
+    return FRIENDS.some(f => computeMatch(f, counts).pairs > 0);
+  }, [counts, session, groupData]);
+
+  /* modal de troca: recalcula ao vivo conforme a coleção muda */
+  let modal = null;
+  if (openMatch) {
+    const person = openMatch.person;
+    const match = openMatch.kind === 'real'
+      ? computeRealMatch(openMatch.member, counts)
+      : computeMatch(openMatch.friend, counts);
+    modal = <TradeModal person={person} match={match} onClose={() => setOpenMatch(null)}/>;
+  }
 
   return (
     <div className="min-h-screen bg-void pb-32">
@@ -1148,12 +1548,21 @@ function App() {
       <main key={tab} className={dir > 0 ? 'anim-slideL' : 'anim-slideR'}>
         {tab === 'album'   && <AlbumTab counts={counts} onInc={inc} onDec={dec}/>}
         {tab === 'copies'  && <CopiesTab counts={counts} onInc={inc} onDec={dec}/>}
-        {tab === 'matches' && <MatchesTab counts={counts} onOpenFriend={setOpenFriend}/>}
+        {tab === 'matches' && (
+          <MatchesTab counts={counts} onOpen={setOpenMatch} session={session} groupData={groupData}
+                      onGoGroup={() => setTab('group')} onRefresh={refreshGroup} loading={loadingGroup}/>
+        )}
+        {tab === 'group' && (
+          <GroupTab session={session} onAuth={handleAuth} onLogout={handleLogout}
+                    invite={invite} onClearInvite={clearInvite}
+                    activeGroupId={activeGroupId} setActiveGroupId={setActiveGroupId}
+                    groupData={groupData} onRefresh={refreshGroup}/>
+        )}
       </main>
 
-      <BottomNav tab={tab} setTab={setTab} dupeTotal={dupeTotal} matchAlert={matchAlert}/>
+      <BottomNav tab={tab} setTab={setTab} dupeTotal={dupeTotal} matchAlert={matchAlert} groupAlert={!!invite && !session}/>
 
-      {openFriend && <TradeModal friend={openFriend} counts={counts} onClose={() => setOpenFriend(null)}/>}
+      {modal}
     </div>
   );
 }
