@@ -648,10 +648,9 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
               {isLegend && <span className="text-yellow-200 drop-shadow"><Icon.spark width="15" height="15"/></span>}
             </div>
 
-            {/* centro: bandeira + número grande (sem nomes de jogadores) */}
+            {/* centro: número grande (sem bandeiras/emojis) */}
             <div className="relative flex-1 flex flex-col items-center justify-center">
-              <span className="text-[32px] sm:text-[30px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{sticker.icon || team.flag}</span>
-              <span className="font-display font-black text-[26px] sm:text-[22px] leading-none text-white mt-1.5 drop-shadow-[0_2px_8px_rgba(0,0,0,.7)]">
+              <span className="font-display font-black text-[40px] sm:text-[34px] leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.7)]">
                 {sticker.team.code === 'FWC' ? String(sticker.num - 1).padStart(2,'0') : String(sticker.num).padStart(2,'0')}
               </span>
               {isLegend && (
@@ -722,10 +721,9 @@ function TeamSection({ team, counts, onInc, onDec, open, onToggle, delay }) {
     <section className="anim-fadeup mb-3" style={{ animationDelay:`${Math.min(delay, 400)}ms` }}>
       <button onClick={onToggle}
               className={`w-full glass rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-300 hover:border-white/20 active:scale-[.99] ${complete ? 'border-neon/40' : ''}`}>
-        <span className={`chev ${open ? 'open' : ''} text-dim`}><Icon.chevron width="14" height="14"/></span>
-        <span className="text-xl">{team.flag}</span>
-        <span className="font-mono font-bold text-[11px] text-cyan26 bg-cyan26/10 border border-cyan26/30 rounded px-1.5 py-0.5">{team.code}</span>
-        <span className="font-display font-semibold text-[13px] tracking-wide uppercase flex-1 text-left truncate">{team.name}</span>
+        <span className={`chev ${open ? 'open' : ''} text-dim shrink-0`}><Icon.chevron width="14" height="14"/></span>
+        <span className="font-mono font-bold text-[11px] text-cyan26 bg-cyan26/10 border border-cyan26/30 rounded px-1.5 py-0.5 shrink-0">{team.code}</span>
+        <span className="font-display font-semibold text-[13px] tracking-wide uppercase flex-1 text-left truncate min-w-0">{team.name}</span>
         {complete && <span className="text-neon"><Icon.spark width="13" height="13"/></span>}
         <div className="w-14 h-1 rounded-full bg-white/[.07] overflow-hidden">
           <div className="bar-fill h-full" style={{ width:`${(got/list.length)*100}%`, background:'linear-gradient(90deg,#00e5ff,#00ff87)' }}/>
@@ -834,13 +832,14 @@ function AlbumTab({ counts, onInc, onDec }) {
       <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4">
         {[{ key:'Todas', title:'Todas' }, ...GROUP_DEFS].map(d => (
           <button key={d.key} onClick={() => setGroup(d.key === group ? 'Todas' : d.key)}
-                  className={`shrink-0 font-mono text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all duration-300 active:scale-95
+                  className={`shrink-0 whitespace-nowrap font-mono text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all duration-300 active:scale-95
                     ${group === d.key
                       ? 'border-cyan26/60 text-cyan26 bg-cyan26/10'
                       : 'border-white/10 text-dim hover:text-white/80 hover:border-white/25'}`}>
             {d.title}
           </button>
         ))}
+        <span className="shrink-0 w-2" aria-hidden="true"/>
       </div>
 
       {total === 0 && (
@@ -917,9 +916,9 @@ function MatchCard({ friend, match, onOpen, delay }) {
       style={{ animationDelay:`${delay}ms` }}
     >
       <div className="flex items-center gap-3.5">
-        <div className="relative shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
+        <div className="relative shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-display font-extrabold text-lg text-white"
              style={{ background:`linear-gradient(140deg, ${friend.color}33, ${friend.color}0d)`, border:`1px solid ${friend.color}55` }}>
-          {friend.emoji}
+          {(friend.name||'?').trim().charAt(0).toUpperCase()}
           {match.pairs > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-neon animate-pulse" style={{ boxShadow:'0 0 8px #00ff87' }}/>}
         </div>
 
@@ -958,13 +957,7 @@ function MatchesTab({ counts, onOpen, session, groupData, onGoGroup, onRefresh, 
       .sort((a, b) => b.match.pct - a.match.pct),
   [members, counts]);
 
-  const mockMatches = useMemo(() =>
-    FRIENDS
-      .map(f => ({ kind: 'mock', friend: f, person: f, match: computeMatch(f, counts) }))
-      .sort((a, b) => b.match.pct - a.match.pct),
-  [counts]);
-
-  const list = logged ? realMatches : mockMatches;
+  const list = logged ? realMatches : [];
 
   return (
     <div className="px-4 pb-10 pt-6 max-w-2xl mx-auto">
@@ -974,7 +967,7 @@ function MatchesTab({ counts, onOpen, session, groupData, onGoGroup, onRefresh, 
           <p className="text-dim text-[13px] mt-1">
             {logged
               ? <>Grupo <b className="text-white/80">{groupData?.group?.name || '…'}</b> — coleções reais dos seus amigos.</>
-              : 'Calculado em tempo real com base no seu álbum e nas suas repetidas.'}
+              : 'Entre no seu grupo para ver os matches reais com seus amigos.'}
           </p>
         </div>
         {logged && (
@@ -986,11 +979,14 @@ function MatchesTab({ counts, onOpen, session, groupData, onGoGroup, onRefresh, 
       </div>
 
       {!logged && (
-        <button onClick={onGoGroup}
-                className="anim-fadeup w-full mb-4 rounded-2xl px-4 py-3 text-left border border-cyan26/30 bg-cyan26/[.06] hover:bg-cyan26/10 transition-all active:scale-[.99]">
-          <span className="text-[12px] text-cyan26 font-semibold">⚡ Estes são amigos de exemplo.</span>
-          <span className="text-[12px] text-dim"> Crie sua conta na aba <b className="text-white/80">Grupo</b> e convide seus amigos para trocar de verdade!</span>
-        </button>
+        <div className="anim-fadeup glass rounded-2xl py-12 px-6 flex flex-col items-center gap-3 text-center">
+          <Icon.swap width="34" height="34" className="opacity-40 text-dim"/>
+          <p className="text-sm text-dim">Crie sua conta e convide seus amigos<br/>para ver os matches de troca de verdade.</p>
+          <button onClick={onGoGroup} className="mt-1 rounded-xl px-4 py-2.5 font-display font-semibold text-[12px] text-black"
+                  style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)' }}>
+            CRIAR CONTA
+          </button>
+        </div>
       )}
 
       {logged && members.length === 0 && (
@@ -1026,7 +1022,7 @@ function MiniSticker({ id }) {
   if (!s) return null;
   return (
     <div className="flex items-center gap-2.5 rounded-xl px-3 py-2 bg-white/[.04] border border-white/[.07]">
-      <span className="text-lg shrink-0">{s.team.flag}</span>
+      <span className="font-mono font-bold text-[11px] text-cyan26 shrink-0 w-9">{s.team.code}</span>
       <div className="min-w-0">
         <div className="text-[12px] font-semibold truncate">{s.rarity==='legend' ? '★ ' : ''}{s.label || `Figurinha ${String(s.num).padStart(2,'0')}`}</div>
         <div className="font-mono text-[10px] text-dim">{s.codeLabel} — {s.team.name}</div>
@@ -1053,7 +1049,7 @@ function TradeModal({ person, match, onClose }) {
         <div className="flex items-center gap-3.5 mb-5">
           <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-2xl"
                style={{ background:`linear-gradient(140deg, ${person.color}33, ${person.color}0d)`, border:`1px solid ${person.color}66` }}>
-            {person.emoji}
+            {(person.name||'?').trim().charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
             <div className="font-display font-extrabold text-lg leading-tight">Match com {person.name}</div>
@@ -1201,17 +1197,17 @@ function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGrou
       <div className="px-4 pb-10 pt-6 max-w-md mx-auto">
         <div className="anim-fadeup mb-6">
           <h2 className="font-display font-extrabold text-2xl">Seu <span className="text-cyan26">Grupo</span> de Troca</h2>
-          <p className="text-dim text-[13px] mt-1">Crie sua conta, convide amigos e troquem figurinhas de verdade.</p>
+          <p className="text-dim text-[13px] mt-1">Troca de figurinhas da Copa, entre amigos.</p>
         </div>
 
         {invite && (
           <div className="anim-fadeup mb-4 rounded-2xl px-4 py-3 border border-neon/40 bg-neon/[.07]">
-            <span className="text-[13px]">🎟️ <b className="text-neon">Você foi convidado!</b> Crie sua conta (ou entre) para se juntar ao grupo <b className="font-mono">{invite}</b>.</span>
+            <span className="text-[13px]"><b className="text-neon">Você foi convidado!</b> Crie sua conta (ou entre) para se juntar ao grupo <b className="font-mono">{invite}</b>.</span>
           </div>
         )}
 
         <div className="anim-fadeup glass rounded-2xl p-1 flex mb-4" style={{ animationDelay:'80ms' }}>
-          {[['signup','Criar conta'],['login','Já tenho conta']].map(([key, label]) => (
+          {[['signup','Criar conta'],['login','Entrar']].map(([key, label]) => (
             <button key={key} onClick={() => setMode(key)}
                     className={`flex-1 font-display font-semibold text-[12px] py-2.5 rounded-xl transition-all duration-300
                       ${mode === key ? 'bg-cyan26/15 text-cyan26 border border-cyan26/40' : 'text-dim border border-transparent'}`}>
@@ -1223,7 +1219,7 @@ function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGrou
         <div className="anim-fadeup glass rounded-2xl p-5 flex flex-col gap-4" style={{ animationDelay:'140ms' }}>
           <Field label={mode === 'signup' ? 'Seu nome ou apelido' : 'Nome ou e-mail'}>
             <input className={inputCls} value={name} onChange={e => setName(e.target.value)} maxLength={60}
-                   placeholder={mode === 'signup' ? 'Ex.: Cunha' : 'Ex.: Cunha ou voce@email.com'}/>
+                   placeholder={mode === 'signup' ? 'seu nome de usuário' : 'seu nome de usuário ou e-mail'}/>
           </Field>
           {mode === 'signup' && (
             <Field label="E-mail (opcional — para entrar por e-mail)">
@@ -1234,23 +1230,10 @@ function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGrou
             <input className={inputCls} value={pin} onChange={e => setPin(e.target.value.replace(/\D/g,'').slice(0,8))}
                    type="password" inputMode="numeric" placeholder="••••"/>
           </Field>
-          {mode === 'signup' && (
-            <Field label="Seu emoji">
-              <div className="flex gap-1.5 flex-wrap">
-                {EMOJIS.map(e => (
-                  <button key={e} onClick={() => setEmoji(e)}
-                          className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border transition-all active:scale-90
-                            ${emoji === e ? 'border-cyan26/60 bg-cyan26/10' : 'border-white/10 hover:border-white/25'}`}>
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </Field>
-          )}
           <button onClick={submit} disabled={busy}
                   className="w-full rounded-2xl py-3.5 font-display font-semibold text-[13px] tracking-wide text-black active:scale-[.98] transition-all disabled:opacity-50"
                   style={{ background:'linear-gradient(95deg,#00e5ff,#00ff87)', boxShadow:'0 8px 28px -8px rgba(0,255,135,.55)' }}>
-            {busy ? 'AGUARDE…' : mode === 'signup' ? 'CRIAR CONTA E MEU GRUPO' : 'ENTRAR'}
+            {busy ? 'AGUARDE…' : mode === 'signup' ? 'Entrar pro grupo' : 'Bora colar'}
           </button>
           {msg && <p className={`text-[12px] text-center ${msg.ok ? 'text-neon' : 'text-red-400'}`}>{msg.text}</p>}
         </div>
@@ -1270,7 +1253,7 @@ function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGrou
     <div className="px-4 pb-10 pt-6 max-w-md mx-auto">
       {/* perfil */}
       <div className="anim-fadeup glass rounded-2xl p-4 flex items-center gap-3.5 mb-5">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border border-cyan26/40 bg-cyan26/10">{session.emoji}</div>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-display font-extrabold text-xl text-cyan26 border border-cyan26/40 bg-cyan26/10">{(session.name||'?').trim().charAt(0).toUpperCase()}</div>
         <div className="flex-1 min-w-0">
           <div className="font-display font-extrabold text-[16px] truncate">{session.name}</div>
           <div className="font-mono text-[11px] text-dim">{groups.length} grupo{groups.length===1?'':'s'} de troca</div>
@@ -1316,14 +1299,14 @@ function GroupTab({ session, onAuth, onLogout, invite, onClearInvite, activeGrou
                       const mpct = Math.round((owned / STICKERS.length) * 100);
                       return (
                         <div key={m.id} className="flex items-center gap-2.5 rounded-xl px-3 py-2 bg-white/[.04] border border-white/[.06]">
-                          <span className="text-lg">{m.emoji}</span>
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center font-display font-bold text-sm text-white bg-white/10 border border-white/15">{(m.name||'?').trim().charAt(0).toUpperCase()}</span>
                           <span className="text-[13px] font-semibold flex-1 truncate">{m.name}</span>
                           <span className="font-mono text-[11px]" style={{ color: MEMBER_COLORS[mi % MEMBER_COLORS.length] }}>{mpct}% do álbum</span>
                         </div>
                       );
                     })}
                     {groupData?.group?.id === g.id && groupData.members.length === 0 && (
-                      <p className="text-[12px] text-dim italic">Só você por aqui — mande o link de convite! 🎟️</p>
+                      <p className="text-[12px] text-dim italic">Só você por aqui — mande o link de convite!</p>
                     )}
                     <button onClick={onRefresh} className="font-mono text-[10px] uppercase tracking-wider text-dim hover:text-cyan26 self-start transition-colors">↻ atualizar membros</button>
                   </div>
@@ -1528,7 +1511,7 @@ function App() {
   const dupeTotal = useMemo(() => STICKERS.reduce((a, s) => a + Math.max(0, (counts[s.id] || 0) - 1), 0), [counts]);
   const matchAlert = useMemo(() => {
     if (session && groupData?.members?.length) return groupData.members.some(m => computeRealMatch(m, counts).pairs > 0);
-    return FRIENDS.some(f => computeMatch(f, counts).pairs > 0);
+    return false;
   }, [counts, session, groupData]);
 
   /* modal de troca: recalcula ao vivo conforme a coleção muda */
