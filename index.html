@@ -24,6 +24,7 @@
           cyan26: '#00e5ff',
           neon:   '#00ff87',
           dim:    '#8b93a7',
+          cream:  '#ece4d2',
         },
         fontFamily: {
           display: ['Unbounded', 'sans-serif'],
@@ -56,6 +57,8 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1c1f28; border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: #00e5ff44; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
 
   /* ---------- Glass ---------- */
   .glass {
@@ -139,26 +142,32 @@
   @keyframes ticker { from { transform: translateX(0);} to { transform: translateX(-50%);} }
   .anim-ticker { animation: ticker 28s linear infinite; }
 
-  /* ---------- Sticker card ---------- */
+  /* ---------- Figurinha (moldura Panini) ---------- */
   .sticker-tilt {
     transform-style: preserve-3d;
     transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
     will-change: transform;
   }
-  .sticker-owned {
-    box-shadow: 0 0 0 1px rgba(0,229,255,.45), 0 0 22px -4px rgba(0,229,255,.35), 0 14px 30px -16px rgba(0,0,0,.9);
+  .frame-common {
+    background: linear-gradient(165deg, #f6f0e0, #ddd3bc);
+    box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 14px 28px -14px rgba(0,0,0,.9), 0 0 18px -8px rgba(0,229,255,.25);
   }
-  .sticker-dupe {
-    box-shadow: 0 0 0 1px rgba(0,255,135,.5), 0 0 26px -4px rgba(0,255,135,.4), 0 14px 30px -16px rgba(0,0,0,.9);
+  .frame-shiny {
+    background: linear-gradient(160deg, #f2f3f8, #aeb6c6 45%, #e8ebf2 70%, #8d96a8);
+    box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 14px 28px -14px rgba(0,0,0,.9), 0 0 22px -6px rgba(0,229,255,.45);
   }
-  .holo-ring {
+  .frame-legend {
     background: linear-gradient(100deg,#00e5ff,#00ff87,#b96bff,#ffd166,#00e5ff);
-    background-size: 200% 100%;
+    background-size: 220% 100%;
     animation: holo 3.2s linear infinite;
+    box-shadow: 0 14px 28px -14px rgba(0,0,0,.9), 0 0 26px -4px rgba(0,255,135,.5);
+  }
+  .stripes {
+    background-image: repeating-linear-gradient(125deg, rgba(255,255,255,.085) 0 10px, transparent 10px 26px);
   }
   .shine::before {
     content:''; position:absolute; inset:0; z-index:5; pointer-events:none;
-    background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+    background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,.25) 50%, transparent 70%);
     transform: translateX(-130%) skewX(-18deg);
   }
   .group-card:hover .shine::before { animation: shineSweep 1s ease; }
@@ -171,6 +180,9 @@
     color: transparent;
   }
 
+  .chev { transition: transform .3s cubic-bezier(.16,1,.3,1); }
+  .chev.open { transform: rotate(90deg); }
+
   .no-select { user-select: none; -webkit-user-select: none; }
 </style>
 </head>
@@ -182,29 +194,118 @@
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
 /* ================================================================
-   DADOS — Seleções & Figurinhas Copa 2026
+   DADOS — As 48 seleções da Copa 2026 (288 figurinhas)
 ================================================================ */
 const TEAMS = [
-  { code:'BRA', name:'Brasil',    flag:'🇧🇷', c1:'#ffd60a', c2:'#0a7e3d' },
-  { code:'ARG', name:'Argentina', flag:'🇦🇷', c1:'#75c8f0', c2:'#3a86c8' },
-  { code:'USA', name:'EUA',       flag:'🇺🇸', c1:'#e63946', c2:'#1d3580' },
-  { code:'MEX', name:'México',    flag:'🇲🇽', c1:'#0a8f4e', c2:'#b3232f' },
-  { code:'CAN', name:'Canadá',    flag:'🇨🇦', c1:'#e63946', c2:'#8c1d28' },
-  { code:'FRA', name:'França',    flag:'🇫🇷', c1:'#3457d5', c2:'#1a2f7a' },
-  { code:'GER', name:'Alemanha',  flag:'🇩🇪', c1:'#e0e0e0', c2:'#2b2b2b' },
-  { code:'POR', name:'Portugal',  flag:'🇵🇹', c1:'#d62839', c2:'#0a6b3d' },
+  /* CONCACAF */
+  { code:'USA', name:'EUA',           flag:'🇺🇸', c1:'#b31942', c2:'#0a3161', conf:'CONCACAF' },
+  { code:'MEX', name:'México',        flag:'🇲🇽', c1:'#0a8f4e', c2:'#b3232f', conf:'CONCACAF' },
+  { code:'CAN', name:'Canadá',        flag:'🇨🇦', c1:'#e63946', c2:'#7a0e1c', conf:'CONCACAF' },
+  { code:'PAN', name:'Panamá',        flag:'🇵🇦', c1:'#da121a', c2:'#072357', conf:'CONCACAF' },
+  { code:'CUW', name:'Curaçao',       flag:'🇨🇼', c1:'#f9e814', c2:'#002b7f', conf:'CONCACAF' },
+  { code:'HAI', name:'Haiti',         flag:'🇭🇹', c1:'#d21034', c2:'#00209f', conf:'CONCACAF' },
+  /* CONMEBOL */
+  { code:'BRA', name:'Brasil',        flag:'🇧🇷', c1:'#ffd60a', c2:'#0a7e3d', conf:'CONMEBOL' },
+  { code:'ARG', name:'Argentina',     flag:'🇦🇷', c1:'#75c8f0', c2:'#3a86c8', conf:'CONMEBOL' },
+  { code:'URU', name:'Uruguai',       flag:'🇺🇾', c1:'#7ab8e6', c2:'#1f4e8c', conf:'CONMEBOL' },
+  { code:'COL', name:'Colômbia',      flag:'🇨🇴', c1:'#fcd116', c2:'#003893', conf:'CONMEBOL' },
+  { code:'ECU', name:'Equador',       flag:'🇪🇨', c1:'#ffd100', c2:'#0033a0', conf:'CONMEBOL' },
+  { code:'PAR', name:'Paraguai',      flag:'🇵🇾', c1:'#d52b1e', c2:'#0038a8', conf:'CONMEBOL' },
+  /* UEFA */
+  { code:'ENG', name:'Inglaterra',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', c1:'#e8e8e8', c2:'#cf081f', conf:'UEFA' },
+  { code:'FRA', name:'França',        flag:'🇫🇷', c1:'#3457d5', c2:'#1a2f7a', conf:'UEFA' },
+  { code:'GER', name:'Alemanha',      flag:'🇩🇪', c1:'#ffce00', c2:'#1f1f1f', conf:'UEFA' },
+  { code:'ESP', name:'Espanha',       flag:'🇪🇸', c1:'#ffc400', c2:'#c60b1e', conf:'UEFA' },
+  { code:'POR', name:'Portugal',      flag:'🇵🇹', c1:'#d62839', c2:'#0a6b3d', conf:'UEFA' },
+  { code:'NED', name:'Holanda',       flag:'🇳🇱', c1:'#ff7a00', c2:'#21468b', conf:'UEFA' },
+  { code:'BEL', name:'Bélgica',       flag:'🇧🇪', c1:'#fdda24', c2:'#ef3340', conf:'UEFA' },
+  { code:'CRO', name:'Croácia',       flag:'🇭🇷', c1:'#d80027', c2:'#0052b4', conf:'UEFA' },
+  { code:'NOR', name:'Noruega',       flag:'🇳🇴', c1:'#ba0c2f', c2:'#00205b', conf:'UEFA' },
+  { code:'AUT', name:'Áustria',       flag:'🇦🇹', c1:'#ed2939', c2:'#8c1d28', conf:'UEFA' },
+  { code:'SUI', name:'Suíça',         flag:'🇨🇭', c1:'#d52b1e', c2:'#8c1518', conf:'UEFA' },
+  { code:'SCO', name:'Escócia',       flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', c1:'#0065bf', c2:'#0a2e5c', conf:'UEFA' },
+  { code:'ITA', name:'Itália',        flag:'🇮🇹', c1:'#0066b2', c2:'#009246', conf:'UEFA' },
+  { code:'DEN', name:'Dinamarca',     flag:'🇩🇰', c1:'#c8102e', c2:'#7a0a1e', conf:'UEFA' },
+  { code:'TUR', name:'Turquia',       flag:'🇹🇷', c1:'#e30a17', c2:'#8c0610', conf:'UEFA' },
+  { code:'POL', name:'Polônia',       flag:'🇵🇱', c1:'#e8e8e8', c2:'#dc143c', conf:'UEFA' },
+  /* AFC */
+  { code:'JPN', name:'Japão',         flag:'🇯🇵', c1:'#1d2088', c2:'#bc002d', conf:'AFC' },
+  { code:'KOR', name:'Coreia do Sul', flag:'🇰🇷', c1:'#cd2e3a', c2:'#0047a0', conf:'AFC' },
+  { code:'IRN', name:'Irã',           flag:'🇮🇷', c1:'#239f40', c2:'#da0000', conf:'AFC' },
+  { code:'AUS', name:'Austrália',     flag:'🇦🇺', c1:'#ffcd00', c2:'#00843d', conf:'AFC' },
+  { code:'UZB', name:'Uzbequistão',   flag:'🇺🇿', c1:'#1eb53a', c2:'#0099b5', conf:'AFC' },
+  { code:'JOR', name:'Jordânia',      flag:'🇯🇴', c1:'#ce1126', c2:'#007a3d', conf:'AFC' },
+  { code:'KSA', name:'Arábia Saudita',flag:'🇸🇦', c1:'#006c35', c2:'#0a3d23', conf:'AFC' },
+  { code:'QAT', name:'Catar',         flag:'🇶🇦', c1:'#8a1538', c2:'#5c0e26', conf:'AFC' },
+  { code:'IRQ', name:'Iraque',        flag:'🇮🇶', c1:'#ce1126', c2:'#2b2b2b', conf:'AFC' },
+  /* CAF */
+  { code:'MAR', name:'Marrocos',      flag:'🇲🇦', c1:'#c1272d', c2:'#006233', conf:'CAF' },
+  { code:'SEN', name:'Senegal',       flag:'🇸🇳', c1:'#00853f', c2:'#fdef42', conf:'CAF' },
+  { code:'EGY', name:'Egito',         flag:'🇪🇬', c1:'#ce1126', c2:'#2b2b2b', conf:'CAF' },
+  { code:'ALG', name:'Argélia',       flag:'🇩🇿', c1:'#006233', c2:'#d21034', conf:'CAF' },
+  { code:'TUN', name:'Tunísia',       flag:'🇹🇳', c1:'#e70013', c2:'#8c0610', conf:'CAF' },
+  { code:'CIV', name:'C. do Marfim',  flag:'🇨🇮', c1:'#f77f00', c2:'#009e60', conf:'CAF' },
+  { code:'GHA', name:'Gana',          flag:'🇬🇭', c1:'#fcd116', c2:'#ce1126', conf:'CAF' },
+  { code:'RSA', name:'África do Sul', flag:'🇿🇦', c1:'#007a4d', c2:'#ffb612', conf:'CAF' },
+  { code:'CPV', name:'Cabo Verde',    flag:'🇨🇻', c1:'#003893', c2:'#cf2027', conf:'CAF' },
+  { code:'COD', name:'RD Congo',      flag:'🇨🇩', c1:'#007fff', c2:'#ce1021', conf:'CAF' },
+  /* OFC */
+  { code:'NZL', name:'N. Zelândia',   flag:'🇳🇿', c1:'#00247d', c2:'#1f1f1f', conf:'OFC' },
 ];
 
+/* 6 figurinhas por seleção: Escudo (shiny) · 4 jogadores · Craque (lendária) */
 const ROSTER = {
-  BRA:['Escudo','Vini Jr.','Rodrygo','Endrick','Bruno G.','Craque Lendário'],
-  ARG:['Escudo','Messi','J. Álvarez','E. Fernández','Di María','Craque Lendário'],
-  USA:['Escudo','Pulisic','McKennie','Reyna','Balogun','Craque Lendário'],
-  MEX:['Escudo','S. Giménez','Lozano','E. Álvarez','Gallardo','Craque Lendário'],
-  CAN:['Escudo','A. Davies','J. David','Eustáquio','Larin','Craque Lendário'],
-  FRA:['Escudo','Mbappé','Griezmann','Tchouaméni','Camavinga','Craque Lendário'],
-  GER:['Escudo','Musiala','Wirtz','Kimmich','Havertz','Craque Lendário'],
-  POR:['Escudo','Cristiano','B. Fernandes','Rafael Leão','Vitinha','Craque Lendário'],
+  USA:['Escudo','McKennie','Weah','Reyna','Balogun','Pulisic'],
+  MEX:['Escudo','Lozano','E. Álvarez','R. Jiménez','Gallardo','S. Giménez'],
+  CAN:['Escudo','J. David','Eustáquio','Buchanan','Larin','A. Davies'],
+  PAN:['Escudo','Fajardo','Murillo','Blackman','Godoy','Carrasquilla'],
+  CUW:['Escudo','J. Bacuna','Gorré','Martina','Room','L. Bacuna'],
+  HAI:['Escudo','Pierrot','Jean Jacques','Etienne Jr.','Adé','Nazon'],
+  BRA:['Escudo','Vini Jr.','Rodrygo','Endrick','Bruno G.','Neymar'],
+  ARG:['Escudo','J. Álvarez','Mac Allister','E. Fernández','Lautaro','Messi'],
+  URU:['Escudo','D. Núñez','Araújo','Ugarte','Pellistri','Valverde'],
+  COL:['Escudo','James R.','J. Durán','R. Ríos','Muñoz','Luis Díaz'],
+  ECU:['Escudo','Pacho','Hincapié','Plata','K. Páez','M. Caicedo'],
+  PAR:['Escudo','Enciso','Cubas','Alderete','Sanabria','Almirón'],
+  ENG:['Escudo','Bellingham','Saka','Foden','Rice','Kane'],
+  FRA:['Escudo','Dembélé','Tchouaméni','Camavinga','Saliba','Mbappé'],
+  GER:['Escudo','Wirtz','Kimmich','Havertz','Rüdiger','Musiala'],
+  ESP:['Escudo','Pedri','Rodri','N. Williams','Olmo','Lamine Yamal'],
+  POR:['Escudo','B. Fernandes','R. Leão','Vitinha','J. Neves','Cristiano'],
+  NED:['Escudo','Gakpo','F. de Jong','Simons','Dumfries','Van Dijk'],
+  BEL:['Escudo','Doku','Lukaku','A. Onana','Trossard','De Bruyne'],
+  CRO:['Escudo','Gvardiol','Kovačić','Sučić','Kramarić','Modrić'],
+  NOR:['Escudo','Ødegaard','Sørloth','Nusa','Berge','Haaland'],
+  AUT:['Escudo','Sabitzer','Laimer','Baumgartner','Arnautović','Alaba'],
+  SUI:['Escudo','Embolo','Sommer','Ndoye','Rieder','Xhaka'],
+  SCO:['Escudo','Robertson','McGinn','Gilmour','C. Adams','McTominay'],
+  ITA:['Escudo','Barella','Tonali','Retegui','Bastoni','Donnarumma'],
+  DEN:['Escudo','Højlund','Hjulmand','Isaksen','Maehle','Eriksen'],
+  TUR:['Escudo','Çalhanoğlu','K. Yıldız','Kökçü','Demiral','Arda Güler'],
+  POL:['Escudo','Zieliński','Świderski','Cash','Zalewski','Lewandowski'],
+  JPN:['Escudo','Mitoma','Endo','Kamada','Doan','Kubo'],
+  KOR:['Escudo','Lee Kang-in','Kim Min-jae','Hwang Hee-chan','Cho Gue-sung','Son'],
+  IRN:['Escudo','Azmoun','Jahanbakhsh','Hajsafi','Ghoddos','Taremi'],
+  AUS:['Escudo','Souttar','Goodwin','Duke','Ryan','Irvine'],
+  UZB:['Escudo','Shomurodov','Fayzullaev','Urunov','Yuldoshev','Khusanov'],
+  JOR:['Escudo','Al-Naimat','Olwan','Haddad','Abualnadi','Al-Tamari'],
+  KSA:['Escudo','Kanno','Al-Buraikan','Al-Shehri','Al-Owais','Al-Dawsari'],
+  QAT:['Escudo','Almoez Ali','Muntari','Hassan','Barsham','Akram Afif'],
+  IRQ:['Escudo','Ali Jasim','Z. Iqbal','Al-Ammari','J. Hassan','Aymen Hussein'],
+  MAR:['Escudo','Brahim Díaz','En-Nesyri','Amrabat','Bounou','Hakimi'],
+  SEN:['Escudo','I. Sarr','N. Jackson','P. M. Sarr','Koulibaly','Mané'],
+  EGY:['Escudo','Marmoush','Trezeguet','Zizo','Hamdi','Salah'],
+  ALG:['Escudo','Amoura','Aouar','Gouiri','Bentaleb','Mahrez'],
+  TUN:['Escudo','Hannibal','Laidouni','Talbi','Khenissi','Msakni'],
+  CIV:['Escudo','Haller','Pépé','S. Fofana','Adingra','Kessié'],
+  GHA:['Escudo','Partey','Semenyo','I. Williams','Lamptey','Kudus'],
+  RSA:['Escudo','Zwane','Foster','Mokoena','R. Williams','Tau'],
+  CPV:['Escudo','Bebé','J. Monteiro','G. Rodrigues','Vozinha','Ryan Mendes'],
+  COD:['Escudo','Bakambu','Mbemba','Masuaku','Mayele','Wissa'],
+  NZL:['Escudo','Cacace','Garbett','Bell','Stamenić','Chris Wood'],
 };
+
+const CONFS = ['CONCACAF','CONMEBOL','UEFA','AFC','CAF','OFC'];
 
 const STICKERS = TEAMS.flatMap(team =>
   ROSTER[team.code].map((label, i) => ({
@@ -314,6 +415,21 @@ const Icon = {
       <path d="M12 2l2.1 6.2L20 10l-5.9 1.8L12 18l-2.1-6.2L4 10l5.9-1.8z"/>
     </svg>
   ),
+  search: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}>
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+    </svg>
+  ),
+  chevron: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M9 6l6 6-6 6"/>
+    </svg>
+  ),
+  player: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
+      <circle cx="12" cy="7.5" r="3.6"/><path d="M4.5 21c.6-4.4 3.6-7 7.5-7s6.9 2.6 7.5 7z"/>
+    </svg>
+  ),
 };
 
 /* ================================================================
@@ -381,7 +497,7 @@ function ParallaxHeader({ counts, active }) {
         </h1>
 
         <p className="anim-fadeup mt-3 text-dim text-[13px] tracking-wide" style={{ animationDelay:'.28s' }}>
-          Complete o álbum · troque repetidas · feche matches
+          48 seleções · {STICKERS.length} figurinhas · troque repetidas
         </p>
 
         {/* stats glass */}
@@ -409,7 +525,7 @@ function ParallaxHeader({ counts, active }) {
 }
 
 /* ================================================================
-   FIGURINHA — tilt 3D + estados + spring
+   FIGURINHA — moldura Panini + tilt 3D + estados + spring
 ================================================================ */
 function StickerCard({ sticker, count, onInc, onDec, compact }) {
   const ref = useRef(null);
@@ -452,21 +568,10 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
 
   const isLegend = rarity === 'legend';
   const isShiny = rarity === 'shiny';
-
-  const face = owned ? (
-    <div className="absolute inset-0"
-         style={{ background:`linear-gradient(160deg, ${team.c1}26 0%, ${team.c2}55 60%, #06070a 130%)` }}/>
-  ) : (
-    <div className="absolute inset-0 bg-graphite"/>
-  );
+  const frameClass = isLegend ? 'frame-legend' : isShiny ? 'frame-shiny' : 'frame-common';
 
   return (
     <div className={`relative ${compact ? '' : 'group-card'}`} style={{ perspective:'700px' }}>
-      {/* anel holográfico — lendária possuída */}
-      {owned && isLegend && (
-        <div className="holo-ring absolute -inset-[1.5px] rounded-2xl opacity-90" style={{ filter:'blur(.5px)' }}/>
-      )}
-
       <button
         ref={ref}
         onMouseMove={!compact ? handleMove : undefined}
@@ -477,42 +582,57 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
         onContextMenu={(e) => e.preventDefault()}
         onClick={handleClick}
         key={popKey}
-        className={`sticker-tilt anim-pop relative w-full aspect-[3/4] rounded-2xl overflow-hidden text-left no-select
-          ${owned ? (dupes > 0 ? 'sticker-dupe' : 'sticker-owned') : 'border border-white/[.06]'}
-          ${owned ? 'shine' : ''}`}
+        className={`sticker-tilt anim-pop relative w-full aspect-[3/4] rounded-xl text-left no-select
+          ${owned ? `${frameClass} p-[5px] shine overflow-hidden` : 'border-2 border-dashed border-white/[.12] bg-white/[.015] overflow-hidden'}`}
         style={{ transformOrigin:'center' }}
         aria-label={`${sticker.label} — ${team.name}`}
       >
-        {face}
+        {owned ? (
+          /* ============ FIGURINHA COLADA (estilo Panini) ============ */
+          <div className="relative h-full w-full rounded-[7px] overflow-hidden flex flex-col"
+               style={{ background:`linear-gradient(155deg, ${team.c1} -20%, ${team.c2} 75%)` }}>
+            <div className="stripes absolute inset-0 pointer-events-none"/>
+            <div className="absolute inset-0 pointer-events-none" style={{ background:'radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255,255,255,.22), transparent 60%)' }}/>
 
-        {/* conteúdo */}
-        <div className={`relative z-[2] h-full flex flex-col justify-between p-2.5 transition-all duration-500 ${owned ? '' : 'opacity-35 grayscale'}`}>
-          <div className="flex items-start justify-between">
-            <span className="font-mono text-[10px] text-white/70">{sticker.team.code}·{String(sticker.num).padStart(2,'0')}</span>
-            {isShiny && <span className={owned ? 'text-cyan26' : 'text-white/40'}><Icon.spark width="12" height="12"/></span>}
-            {isLegend && <span className={owned ? 'text-neon' : 'text-white/40'}><Icon.spark width="14" height="14"/></span>}
+            {/* topo: número + raridade */}
+            <div className="relative flex items-start justify-between px-2 pt-1.5">
+              <span className="font-mono font-bold text-[10px] px-1.5 py-0.5 rounded bg-black/45 text-white/90">
+                {team.code}·{String(sticker.num).padStart(2,'0')}
+              </span>
+              {isShiny && <span className="text-white drop-shadow"><Icon.spark width="13" height="13"/></span>}
+              {isLegend && <span className="text-yellow-200 drop-shadow"><Icon.spark width="15" height="15"/></span>}
+            </div>
+
+            {/* centro: bandeira */}
+            <div className="relative flex-1 flex flex-col items-center justify-center">
+              <span className="text-[42px] sm:text-[38px] leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,.45)]">{team.flag}</span>
+              {isLegend && (
+                <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-yellow-100/90 bg-black/35 px-2 py-0.5 rounded-full">craque</span>
+              )}
+              {isShiny && (
+                <span className="mt-1 font-mono text-[8px] uppercase tracking-[.3em] text-white/90 bg-black/35 px-2 py-0.5 rounded-full">brilhante</span>
+              )}
+            </div>
+
+            {/* base: faixa de nome (clássico Panini) */}
+            <div className="relative px-1.5 pb-1.5">
+              <div className="rounded-md bg-[#0d0f14]/90 backdrop-blur-sm px-2 py-1.5 text-center border border-white/[.07]">
+                <div className={`font-display leading-tight truncate ${isLegend ? 'font-extrabold text-[13px] sm:text-[12px] bg-clip-text text-transparent' : 'font-semibold text-[12px] sm:text-[11px] text-white'}`}
+                     style={isLegend ? { backgroundImage:'linear-gradient(90deg,#ffd166,#00ff87,#00e5ff)' } : {}}>
+                  {isLegend ? `★ ${sticker.label}` : sticker.label}
+                </div>
+                <div className="font-mono text-[8px] uppercase tracking-[.22em] text-dim mt-0.5 truncate">{team.name}</div>
+              </div>
+            </div>
           </div>
-
-          <div className="flex flex-col items-center -mt-1">
-            <span className="text-[30px] leading-none mb-1.5" style={{ filter: owned ? 'none' : 'grayscale(1) opacity(.5)' }}>{team.flag}</span>
-            {isLegend
-              ? <span className="font-display font-extrabold text-[13px] text-center leading-tight bg-clip-text text-transparent"
-                      style={{ backgroundImage: owned ? 'linear-gradient(90deg,#00ff87,#00e5ff)' : 'linear-gradient(90deg,#777,#999)' }}>
-                  ★ {sticker.label.split(' ')[0]}
-                </span>
-              : <span className="font-display font-semibold text-[11px] text-center leading-tight text-white/90">{sticker.label}</span>}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[9px] uppercase tracking-[.18em] text-white/45">{team.name}</span>
-            {owned && <span className="w-1.5 h-1.5 rounded-full" style={{ background: dupes > 0 ? '#00ff87' : '#00e5ff', boxShadow:`0 0 6px ${dupes>0?'#00ff87':'#00e5ff'}` }}/>}
-          </div>
-        </div>
-
-        {/* véu "não tem" */}
-        {!owned && (
-          <div className="absolute inset-0 z-[3] flex items-center justify-center">
-            <span className="font-mono text-[9px] uppercase tracking-[.3em] text-white/25 border border-white/10 rounded-full px-2.5 py-1">faltando</span>
+        ) : (
+          /* ============ SLOT VAZIO (página do álbum) ============ */
+          <div className="relative h-full w-full flex flex-col items-center justify-center">
+            <span className="absolute top-2 left-2.5 font-mono text-[10px] text-white/25">{team.code}·{String(sticker.num).padStart(2,'0')}</span>
+            <span className="absolute font-display font-black text-[64px] text-white/[.04] no-select">{sticker.num}</span>
+            <span className="text-white/[.13]"><Icon.player width="44" height="44"/></span>
+            <span className="mt-2 font-semibold text-[11px] text-white/30 text-center px-2 leading-tight">{sticker.label}</span>
+            <span className="mt-2 font-mono text-[8px] uppercase tracking-[.3em] text-white/20 border border-white/10 rounded-full px-2.5 py-1">faltando</span>
           </div>
         )}
       </button>
@@ -541,41 +661,107 @@ function StickerCard({ sticker, count, onInc, onDec, compact }) {
 }
 
 /* ================================================================
-   ABA · ÁLBUM
+   ABA · ÁLBUM (48 seleções, busca + filtro + seções expansíveis)
 ================================================================ */
+const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+function TeamSection({ team, counts, onInc, onDec, open, onToggle, delay }) {
+  const list = STICKERS.filter(s => s.team.code === team.code);
+  const got = list.filter(s => (counts[s.id] || 0) > 0).length;
+  const complete = got === list.length;
+
+  return (
+    <section className="anim-fadeup mb-3" style={{ animationDelay:`${Math.min(delay, 400)}ms` }}>
+      <button onClick={onToggle}
+              className={`w-full glass rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-300 hover:border-white/20 active:scale-[.99] ${complete ? 'border-neon/40' : ''}`}>
+        <span className={`chev ${open ? 'open' : ''} text-dim`}><Icon.chevron width="14" height="14"/></span>
+        <span className="text-xl">{team.flag}</span>
+        <span className="font-display font-semibold text-[13px] tracking-wide uppercase flex-1 text-left">{team.name}</span>
+        {complete && <span className="text-neon"><Icon.spark width="13" height="13"/></span>}
+        <div className="w-14 h-1 rounded-full bg-white/[.07] overflow-hidden">
+          <div className="bar-fill h-full" style={{ width:`${(got/list.length)*100}%`, background:'linear-gradient(90deg,#00e5ff,#00ff87)' }}/>
+        </div>
+        <span className="font-mono text-[11px] text-dim w-7 text-right">{got}/{list.length}</span>
+      </button>
+
+      {open && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mt-3 px-0.5 anim-fadeup">
+          {list.map(s => (
+            <StickerCard key={s.id} sticker={s} count={counts[s.id] || 0} onInc={onInc} onDec={onDec}/>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function AlbumTab({ counts, onInc, onDec }) {
+  const [conf, setConf] = useState('Todas');
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState({ BRA: true });
+  const query = norm(q.trim());
+
+  const visible = TEAMS.filter(t =>
+    (conf === 'Todas' || t.conf === conf) &&
+    (!query || norm(t.name).includes(query) || t.code.toLowerCase().includes(query) ||
+      ROSTER[t.code].some(n => norm(n).includes(query)))
+  );
+
+  const toggle = (code) => setOpen(o => ({ ...o, [code]: !o[code] }));
+
   return (
     <div className="px-4 pb-10 max-w-2xl mx-auto">
-      <div className="glass rounded-xl px-4 py-2.5 mb-6 flex items-center gap-3 text-[11px] text-dim">
+      <div className="glass rounded-xl px-4 py-2.5 mb-4 flex items-center gap-3 text-[11px] text-dim">
         <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-cyan26 animate-pulse"/>
         <span><b className="text-white/80">Toque</b> para colar · toque de novo p/ <b className="text-neon">repetida</b> · <b className="text-white/80">segure</b> ou use <b className="text-white/80">(–)</b> p/ ajustar</span>
       </div>
 
-      {TEAMS.map((team, ti) => {
-        const list = STICKERS.filter(s => s.team.code === team.code);
-        const got = list.filter(s => (counts[s.id] || 0) > 0).length;
-        return (
-          <section key={team.code} className="anim-fadeup mb-8" style={{ animationDelay:`${ti * 60}ms` }}>
-            <div className="flex items-center justify-between mb-3 px-1">
-              <div className="flex items-center gap-2.5">
-                <span className="text-xl">{team.flag}</span>
-                <h2 className="font-display font-semibold text-sm tracking-wide uppercase">{team.name}</h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-1 rounded-full bg-white/[.07] overflow-hidden">
-                  <div className="bar-fill h-full" style={{ width:`${(got/list.length)*100}%`, background:'linear-gradient(90deg,#00e5ff,#00ff87)' }}/>
-                </div>
-                <span className="font-mono text-[11px] text-dim">{got}/{list.length}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2.5">
-              {list.map(s => (
-                <StickerCard key={s.id} sticker={s} count={counts[s.id] || 0} onInc={onInc} onDec={onDec}/>
-              ))}
-            </div>
-          </section>
-        );
-      })}
+      {/* busca */}
+      <div className="glass rounded-2xl flex items-center gap-2.5 px-4 py-3 mb-3">
+        <span className="text-dim shrink-0"><Icon.search width="16" height="16"/></span>
+        <input
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          placeholder="Buscar seleção ou jogador…"
+          className="bg-transparent outline-none w-full text-[14px] placeholder:text-dim/60"
+        />
+        {q && (
+          <button onClick={() => setQ('')} className="text-dim hover:text-white shrink-0"><Icon.close width="14" height="14"/></button>
+        )}
+      </div>
+
+      {/* filtro por confederação */}
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4">
+        {['Todas', ...CONFS].map(c => (
+          <button key={c} onClick={() => setConf(c)}
+                  className={`shrink-0 font-mono text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all duration-300 active:scale-95
+                    ${conf === c
+                      ? 'border-cyan26/60 text-cyan26 bg-cyan26/10'
+                      : 'border-white/10 text-dim hover:text-white/80 hover:border-white/25'}`}>
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {visible.length === 0 && (
+        <div className="anim-fadeup glass rounded-2xl py-14 flex flex-col items-center gap-3 text-dim">
+          <Icon.search width="30" height="30" className="opacity-40"/>
+          <span className="text-sm">Nada encontrado para “{q}”</span>
+        </div>
+      )}
+
+      {visible.map((team, ti) => (
+        <TeamSection
+          key={team.code}
+          team={team}
+          counts={counts}
+          onInc={onInc}
+          onDec={onDec}
+          open={!!open[team.code] || !!query}
+          onToggle={() => toggle(team.code)}
+          delay={ti * 35}
+        />
+      ))}
     </div>
   );
 }
@@ -599,7 +785,7 @@ function CopiesTab({ counts, onInc, onDec }) {
       </div>
 
       {dupes.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
           {dupes.map((s, i) => (
             <div key={s.id} className="anim-fadeup" style={{ animationDelay:`${i * 45}ms` }}>
               <StickerCard sticker={s} count={counts[s.id]} onInc={onInc} onDec={onDec}/>
@@ -870,7 +1056,7 @@ function App() {
         <div className="anim-ticker flex whitespace-nowrap py-1.5 font-mono text-[10px] tracking-[.25em] uppercase text-dim">
           {[0,1].map(k => (
             <span key={k} className="flex shrink-0">
-              {['STICKR·26','USA · MEX · CAN','48 seleções','104 jogos','troque agora','11.06.2026'].map((t, i) => (
+              {['STICKR·26','USA · MEX · CAN','48 seleções','288 figurinhas','104 jogos','troque agora','11.06.2026'].map((t, i) => (
                 <span key={i} className="mx-6 flex items-center gap-6">{t}<span className="text-cyan26">◆</span></span>
               ))}
             </span>
